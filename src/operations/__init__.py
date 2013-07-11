@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is part of BreezeDB - https://github.com/RMed/breeze_db
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>

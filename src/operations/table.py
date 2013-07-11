@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is part of BreezeDB - https://github.com/RMed/breeze_db
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
@@ -34,20 +35,20 @@ def table_exists(table_name, database):
         database -- Database to check (usually obtained from the Connector)
     """
     # Check the root.breeze file for the table
-    root_breeze = os.path.join(database, 'root.breeze')
-    tree = xmltree.parse(root_file)
+    breeze_file = os.path.join(database, 'root.breeze')
+    tree = XML.parse(breeze_file)
     # Get the root of the tree
-    root = tree.getroot()    
+    breeze_root = tree.getroot()    
     # Check if the table is listed
     table_exists = False
-    for table in root:
+    for table in breeze_root:
         if table.text == table_name:
             # Table exists in the file
             table_exists = True
             break
 
     # Does the table exist in the file?
-    if table_exists == False:
+    if not table_exists:
         return False
 
     # Check if the directory corresponding to the table exists
@@ -55,6 +56,9 @@ def table_exists(table_name, database):
     if os.path.exists(table_path):
         # Directory exists
         return True
+    else:
+        # Directory does not exist
+        return False
 
 def add_table(table_name, database):
     """Add a table to the database.
@@ -76,30 +80,29 @@ def add_table(table_name, database):
 
     # Add <table> element to root.breeze and create table structure
     try:
-        # Add <table> element
+        # Create directory
+        newdir = os.path.join(database, table_name)
+        os.makedirs(newdir, 0755)
+
+        # Create tableinfo.breeze file
+        tableinfo_file = os.path.join(newdir, 'tableinfo.breeze')
+        breeze_tag = XML.Element('breeze')
+        table_tree = XML.ElementTree(breeze_tag)
+        table_tree.write(tableinfo_file)
+
+        # Add <table> element to root.breeze
         # Parse the file
         breeze_file = os.path.join(database, 'root.breeze')
-        tree = XML.parse('breeze_file')
-        root = db_root.getroot()
+        breeze_tree = XML.parse(breeze_file)
+        breeze_root = breeze_tree.getroot()
 
         # Add element to root
         new_table = XML.Element('table')
         new_table.text = table_name
-        root.append(new_table)
+        breeze_root.append(new_table)
 
         # Write to file
-        tree.write(breeze_root)
-
-        # Create directory
-        newdir = os.path.join(database, table_name)
-        os.makedirs(newdir)
-
-        # Create tableinfo.breeze file
-        tableinfo_file = os.path.join(newdir, tableinfo.breeze)
-        breeze_tag = XML.Element('breeze')
-        output = open(tableinfo_file, 'w')
-        output.write(XML.tostring(breeze_tag)
-        output.close()
+        breeze_tree.write(breeze_file)
 
     except OSError:
         # Raise exception
@@ -107,4 +110,5 @@ def add_table(table_name, database):
 
     except IOError:
         # Raise exception
-        raise ConnectorException('error creating tableinfo.breeze file')
+        raise TableException('error writing to file')
+

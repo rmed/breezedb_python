@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is part of BreezeDB - https://github.com/RMed/breeze_db
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
@@ -44,7 +45,7 @@ class Connector():
 
         self.database = path
 
-    def get_tablelist():
+    def get_tablelist(self):
         """Get a list of tables.
 
         This function returns a list of tables contained in the database.
@@ -55,7 +56,7 @@ class Connector():
 
         # Parse the root.breeze file
         root_breeze = os.path.join(self.database, 'root.breeze')
-        tree = xmltree.parse(root_file)
+        tree = XML.parse(root_breeze)
         # Get the root of the tree
         root = tree.getroot()
 
@@ -86,12 +87,11 @@ def create_breezedb(path, name):
         newdir = os.path.join(path, name)
         os.makedirs(newdir)
 
-        # Create file
-        breeze_tag = XML.Element('breeze')
+        # Create root.breeze file
         root_file = os.path.join(path, name, 'root.breeze')
-        output = open(root_file, 'w')
-        output.write(XML.tostring(breeze_tag)
-        output.close()
+        breeze_tag = XML.Element('breeze')
+        tree = XML.ElementTree(breeze_tag)
+        tree.write(root_file)
 
     except OSError:
         # Raise exception
@@ -124,3 +124,4 @@ def remove_breezedb(path):
     except:
         # Raise exception
         raise ConnectorException('could not remove the database')
+
