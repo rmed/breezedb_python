@@ -78,6 +78,13 @@ def add_table(table_name, database):
         # Raise exception
         raise TableException('cannot write to database')
 
+    # Check if the table already exists in the database
+    exists = table_exists(table_name, database)
+
+    if exists:
+        # Raise exception
+        raise TableException('table already exists in the database')
+
     # Add <table> element to root.breeze and create table structure
     try:
         # Create directory
@@ -112,3 +119,81 @@ def add_table(table_name, database):
         # Raise exception
         raise TableException('error writing to file')
 
+def remove_table(table_name, database):
+    """Remove a table from the database.
+
+    Removes the corresponding directory and <table> element from root.breeze
+
+    Arguments:
+        table_name -- Name of the table to create
+        database -- Database to check (usually obtained from the Connector)
+    """
+
+    # Check for write access in the database
+    can_write = os.access(database, os.W_OK)
+
+    if not can_write:
+        # Raise exception
+        raise TableException('cannot write to database')
+
+    # Check that the table exists
+    exists = table_exists(table_name, database)
+
+    if not exists:
+        # Raise exception
+        raise TableException('table does not exist')
+
+    # Remove table
+    try:
+        # Remove <table> element from root.breeze
+        # Parse the file
+        breeze_file = os.path.join(database, 'root.breeze')
+        breeze_tree = XML.parse(breeze_file)
+        breeze_root = breeze_tree.getroot()
+
+        # Find the element
+        for table in breeze_root:
+            if table.text == table_name:
+                # Remove element
+                breeze_root.remove(table)
+                break
+
+        # Write changes to database
+        breeze_tree.write(breeze_file)
+
+        # Remove the directory
+        table_dir = os.path.join(database, table_name)
+        shutil.rmtree(table_dir)
+
+    except OSError:
+        # Raise exception
+        raise TableException('could not remove table directory')
+
+    except IOError:
+        # Raise exception
+        raise TableException('error writing to file')
+
+def get_fieldlist(table_name, database):
+    """Get a list of fields.
+
+    Returns a list of fields present in the specified table.
+
+    Arguments:
+        table_name -- Name of the table to create
+        database -- Database to check (usually obtained from the Connector)
+    """
+
+    fieldlist = []
+
+    # Parse the tableinfo.breeze file
+    table_file = os.path.join(database, table_name, 'tableinfo.breeze')
+    tree = XML.parse(table_breeze)
+    root = tree.getroot()
+
+    # Get all the fields of the table
+    for field in root:
+        fieldlist.append(field.text)
+
+    # Return the list
+    return fieldlist
+        

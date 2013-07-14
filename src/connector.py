@@ -55,9 +55,8 @@ class Connector():
         tablelist = []
 
         # Parse the root.breeze file
-        root_breeze = os.path.join(self.database, 'root.breeze')
-        tree = XML.parse(root_breeze)
-        # Get the root of the tree
+        breeze_file = os.path.join(self.database, 'root.breeze')
+        tree = XML.parse(breeze_file)
         root = tree.getroot()
 
         # Get all the tables of the database
@@ -88,10 +87,10 @@ def create_breezedb(path, name):
         os.makedirs(newdir)
 
         # Create root.breeze file
-        root_file = os.path.join(path, name, 'root.breeze')
+        breeze_file = os.path.join(path, name, 'root.breeze')
         breeze_tag = XML.Element('breeze')
         tree = XML.ElementTree(breeze_tag)
-        tree.write(root_file)
+        tree.write(breeze_file)
 
     except OSError:
         # Raise exception
