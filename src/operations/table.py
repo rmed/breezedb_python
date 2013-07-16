@@ -18,7 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import xml.etree.ElementTree as XML
-import os
+import os, shutil
 
 class TableException(Exception):
     """Class for exceptions in Table module."""
@@ -34,11 +34,12 @@ def table_exists(table_name, database):
         table_name -- Name of the table to check
         database -- Database to check (usually obtained from the Connector)
     """
+
     # Check the root.breeze file for the table
     breeze_file = os.path.join(database, 'root.breeze')
-    tree = XML.parse(breeze_file)
-    # Get the root of the tree
-    breeze_root = tree.getroot()    
+    breeze_tree = XML.parse(breeze_file)
+    breeze_root = tree.getroot()   
+ 
     # Check if the table is listed
     table_exists = False
     for table in breeze_root:
@@ -55,9 +56,22 @@ def table_exists(table_name, database):
     table_path = os.path.join(database, table_name)
     if os.path.exists(table_path):
         # Directory exists
-        return True
+        table_exists = True
     else:
         # Directory does not exist
+        table_exists False
+
+    # Does the directory exist?
+    if not table_exists:
+        return False
+
+    # Check if the tableinfo.breeze file exists
+    table_fileh = os.path.join(table_path, 'tableinfo.breeze')
+    if os.path.isfile(table_file):
+        # File exists
+        return True
+    else:
+        # File does not exist
         return False
 
 def add_table(table_name, database):
@@ -92,10 +106,10 @@ def add_table(table_name, database):
         os.makedirs(newdir, 0755)
 
         # Create tableinfo.breeze file
-        tableinfo_file = os.path.join(newdir, 'tableinfo.breeze')
+        table_file = os.path.join(newdir, 'tableinfo.breeze')
         breeze_tag = XML.Element('breeze')
         table_tree = XML.ElementTree(breeze_tag)
-        table_tree.write(tableinfo_file)
+        table_tree.write(table_file)
 
         # Add <table> element to root.breeze
         # Parse the file
@@ -187,13 +201,13 @@ def get_fieldlist(table_name, database):
 
     # Parse the tableinfo.breeze file
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-    tree = XML.parse(table_breeze)
-    root = tree.getroot()
+    table_tree = XML.parse(table_file)
+    table_root = table_tree.getroot()
 
     # Get all the fields of the table
-    for field in root:
+    for field in table_root:
         fieldlist.append(field.text)
 
     # Return the list
     return fieldlist
-        
+

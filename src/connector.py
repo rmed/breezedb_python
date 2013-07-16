@@ -56,8 +56,8 @@ class Connector():
 
         # Parse the root.breeze file
         breeze_file = os.path.join(self.database, 'root.breeze')
-        tree = XML.parse(breeze_file)
-        root = tree.getroot()
+        breeze_tree = XML.parse(breeze_file)
+        breeze_root = breeze_tree.getroot()
 
         # Get all the tables of the database
         for table in root:
@@ -72,7 +72,7 @@ def create_breezedb(path, name):
     Arguments:
         path -- Absolute path in which to create the database directory
     """
-    
+
     # Check for write access in the specified path
     can_write = os.access(path, os.W_OK)
 
@@ -89,8 +89,8 @@ def create_breezedb(path, name):
         # Create root.breeze file
         breeze_file = os.path.join(path, name, 'root.breeze')
         breeze_tag = XML.Element('breeze')
-        tree = XML.ElementTree(breeze_tag)
-        tree.write(breeze_file)
+        breeze_tree = XML.ElementTree(breeze_tag)
+        breeze_tree.write(breeze_file)
 
     except OSError:
         # Raise exception
@@ -109,8 +109,8 @@ def remove_breezedb(path):
 
     # Check for write access and root.breeze in the specified path
     can_write = os.access(path, os.W_OK)
-    breeze_root = os.path.join(path, 'root.breeze')
-    is_breezedb = os.path.isfile(breeze_root)
+    breeze_file = os.path.join(path, 'root.breeze')
+    is_breezedb = os.path.isfile(breeze_file)
 
     if not can_write or not is_breezedb:
         # Raise exception
