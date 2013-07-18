@@ -59,7 +59,7 @@ def table_exists(table_name, database):
         table_exists = True
     else:
         # Directory does not exist
-        table_exists False
+        table_exists  = False
 
     # Does the directory exist?
     if not table_exists:
