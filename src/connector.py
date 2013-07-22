@@ -60,7 +60,7 @@ class Connector():
         breeze_root = breeze_tree.getroot()
 
         # Get all the tables of the database
-        for table in root:
+        for table in breeze_root:
             tablelist.append(table.text)
 
         # Return the list

@@ -1,0 +1,5 @@
+<breeze>
+    <field>id</field>
+    <field>name</field>
+    <field>last_name</field>
+</breeze>

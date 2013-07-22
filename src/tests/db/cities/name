@@ -1,0 +1,8 @@
+<breeze>
+    <type>string</type>
+    <element index="0">London</element>
+    <element index="1">Paris</element>
+    <element index="2">Berlin</element>
+    <element index="3">Madrid</element>
+    <element index="4">Rome</element>
+</breeze>
