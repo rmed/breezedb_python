@@ -1,22 +1,3 @@
-# -*-# -*- coding: utf-8 -*-
-# This file is part of BreezeDB - https://github.com/RMed/breeze_db
-#
-# Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 import unittest
 import os, sys, shutil
 
@@ -39,9 +20,17 @@ import connector
 class TestDBOperations(unittest.TestCase):
 
     def test_create_breezedb(self):
+        # Create a new database
         path = './'
         name = 'test_database1'
         connector.create_breezedb(path, name)
+
+    def test_create_breezedb_existing(self):
+        # Try to create the database again
+        with self.assertRaises(connector.ConnectorException):
+            path = './'
+            name = 'test_database1'
+            connector.create_breezedb(path, name)
 
     def test_remove_breezedb(self):
         # Remove previously created database
@@ -51,6 +40,14 @@ class TestDBOperations(unittest.TestCase):
         temp = 'db_temp'
         connector.remove_breezedb(temp)
 
+    def test_remove_breezedb_inexistent(self):
+        # Try to remove the databases again
+        with self.assertRaises(connector.ConnectorException):
+            path = 'test_database1'
+            connector.remove_breezedb(path)
+            temp = 'db_temp'
+            connector.remove_breezedb(temp)
+
 if __name__ == "__main__":
     # Remove previous temp copy
     if os.path.isdir('db_temp'):
@@ -59,3 +56,4 @@ if __name__ == "__main__":
     shutil.copytree('db', 'db_temp')
     # Begin tests
     unittest.main()
+

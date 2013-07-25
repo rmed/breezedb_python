@@ -38,7 +38,7 @@ def table_exists(table_name, database):
     # Check the root.breeze file for the table
     breeze_file = os.path.join(database, 'root.breeze')
     breeze_tree = XML.parse(breeze_file)
-    breeze_root = tree.getroot()   
+    breeze_root = breeze_tree.getroot()   
  
     # Check if the table is listed
     table_exists = False
@@ -66,7 +66,7 @@ def table_exists(table_name, database):
         return False
 
     # Check if the tableinfo.breeze file exists
-    table_fileh = os.path.join(table_path, 'tableinfo.breeze')
+    table_file = os.path.join(table_path, 'tableinfo.breeze')
     if os.path.isfile(table_file):
         # File exists
         return True
