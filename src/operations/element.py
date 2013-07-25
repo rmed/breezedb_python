@@ -49,7 +49,7 @@ def element_exists(element_index, field_name, table_name, database):
     field_root = field_tree.getroot()
 
     # Compare the index provided with last element's
-    last_index = field_root[-1].get('index')
+    last_index = int(field_root[-1].get('index'))
     if element_index <= last_index:
         # Is contained
         return True
@@ -85,7 +85,7 @@ def get_element(element_index, field_name, table_name, database):
     field_root = field_tree.getroot()
 
     # Return element
-    return field_root[element_index]
+    return field_root.findall('element')[element_index].text
 
 def find_element(to_find, field_name, table_name, database):
     """Find elements in the field.
@@ -109,7 +109,7 @@ def find_element(to_find, field_name, table_name, database):
     # Get the index of every occurrence
     for element in field_root.iter('element'):
         # Check if the content to find is contained
-        if string.lower(to_find) in string.lower(element.text):
+        if string.lower(str(to_find)) in string.lower(str(element.text)):
             indexlist.append(element.get('index'))
 
     # Return list
@@ -142,7 +142,7 @@ def empty_element(element_index, field_name, table_name, database):
     field_root = field_tree.getroot()
 
     # Empty the element
-    field_root[element_index].text = ""
+    field_root.findall('element')[element_index].text = ""
 
     # Save to file
     field_tree.write(field_file)
@@ -168,7 +168,7 @@ def remove_row(element_index, table_name, database):
     for field in table_root:
 
         # Check that the element exists in the current field
-        exists = element_exists(element_index, field, table_name, database)
+        exists = element_exists(element_index, field.text, table_name, database)
 
         if not exists:
             # Raise exception
@@ -176,19 +176,20 @@ def remove_row(element_index, table_name, database):
 
         try:
             # Parse the field file
-            field_file = os.path.join(database, table_name, field)
+            field_file = os.path.join(database, table_name, field.text)
             field_tree = XML.parse(field_file)
             field_root = field_tree.getroot()        
 
             # Remove the element
-            field_root.remove(field_root[element_index])
+            field_root.remove(field_root.findall('element')[element_index])
 
             # Update the remaining indexes
-            for element in field_root:
+            for element in field_root.iter('element'):
                 # Check if the index is greater than the one deleted
                 if int(element.get('index')) > element_index:
                     # Set the new value
-                    element.set('index', int(element.get('index')) - 1)
+                    # Remember that it is saved as string
+                    element.set('index', str(int(element.get('index')) - 1))
 
             # Save to file
             field_tree.write(field_file)
