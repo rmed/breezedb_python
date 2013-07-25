@@ -137,8 +137,8 @@ def add_field(field_name, field_type, table_name, database):
         # Add <field> element to tableinfo.breeze file
         # Parse the file
         table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-        table_tree = XML.parse(breeze_file)
-        table_root = breeze_tree.getroot()
+        table_tree = XML.parse(table_file)
+        table_root = table_tree.getroot()
 
         # Add element to root
         new_field = XML.Element('field')
