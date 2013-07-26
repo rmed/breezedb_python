@@ -1,0 +1,8 @@
+<breeze>
+    <type>string</type>
+    <element index="0">McPerson1</element>
+    <element index="1">McPerson2</element>
+    <element index="2">McPerson3</element>
+    <element index="3">McPerson4</element>
+    <element index="4">McPerson5</element>
+</breeze>

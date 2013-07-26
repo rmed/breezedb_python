@@ -1,0 +1,5 @@
+<breeze>
+    <field>name</field>
+    <field>location</field>
+    <field>population</field>
+</breeze>

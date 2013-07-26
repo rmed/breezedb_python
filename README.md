@@ -5,6 +5,8 @@ A simple file-based database system.
 
 **This repository contains the *Python* implementation of BreezeDB. For the pseudocode and more information on the project, please [visit the central repository](http://github.com/RMed/breeze_db/).**
 
+This code is written for **Python 2.7**
+
 ## Main characteristics
 
 - Breeze aims to be a simple way of storing data in files, avoiding the need for a database server to be installed and running in the machine.
