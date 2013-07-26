@@ -46,6 +46,15 @@ class TestElement(unittest.TestCase):
         # Must return an empty array
         self.assertEqual(expected, result)
 
+    def test_modify_element(self):
+        # Modify the last element
+        elementops.modify_element(4, 'Nowhere', field, table, database)
+
+    def test_modify_element_inexistent(self):
+        # Modify the last element
+        with self.assertRaises(elementops.ElementException):
+            elementops.modify_element(35, 'Test Name', field, table, database)
+
     def test_empty_element(self):
         # Empty the content of element 0
         elementops.empty_element(0, field, table, database)

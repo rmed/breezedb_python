@@ -115,6 +115,38 @@ def find_element(to_find, field_name, table_name, database):
     # Return list
     return indexlist
 
+def modify_element(element_index, new_content, field_name,
+                    table_name, database):
+    """Modify the content of an element.
+
+    Substitute the element's current content with the one provided.
+
+    Arguments:
+        element_index -- Index of the element to modify (positive integer)
+        field_name -- Name of the field that contains the element
+        table_name -- Name of the table that contains the field
+        database -- Database to check (usually obtained from the Connector)
+    """
+
+    # Check that the element exists
+    exists = element_exists(element_index, field_name, table_name, database)
+
+    if not exists:
+        # Raise exception
+        raise ElementException('the element does not exist')
+
+    # Parse the field file
+    field_file = os.path.join(database, table_name, field_name)
+    field_tree = XML.parse(field_file)
+    field_root = field_tree.getroot()
+
+    # Modify the content
+    # Add str() because the data must be saved as string to the file
+    field_root.findall('element')[element_index].text = str(new_content)
+
+    # Save to file
+    field_tree.write(field_file)
+
 def empty_element(element_index, field_name, table_name, database):
     """Empty the content of an element.
 
