@@ -155,7 +155,7 @@ def rename_table(table_name, database, new_name):
     new_exists = table_exists(new_name, database)
     if new_exists:
         # Raise exception
-        raise TableException('there table %s already exists', %new_name)
+        raise TableException('there table %s already exists', new_name)
 
     # Rename table
     try:

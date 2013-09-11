@@ -173,7 +173,7 @@ def rename_field(field_name, table_name, database, new_name):
 
     if new_exists:
         # Raise exception
-        raise FieldException('the field %s already exists', %new_name)
+        raise FieldException('the field %s already exists', new_name)
 
     # Rename the field
     try:

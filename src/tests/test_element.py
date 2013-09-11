@@ -3,7 +3,7 @@ import os, sys, shutil
 
 sys.path[0:0] = [os.path.join(os.path.dirname(__file__), ".."),]
 
-import core as breeze
+import breezedb.core as breeze
 
 database = 'db_temp'
 table = 'cities'
