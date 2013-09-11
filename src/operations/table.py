@@ -34,7 +34,6 @@ def table_exists(table_name, database):
         table_name -- Name of the table to check
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check the root.breeze file for the table
     breeze_file = os.path.join(database, 'root.breeze')
     breeze_tree = XML.parse(breeze_file)
@@ -84,17 +83,14 @@ def add_table(table_name, database):
         table_name -- Name of the table to create
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check for write access in the database
     can_write = os.access(database, os.W_OK)
-
     if not can_write:
         # Raise exception
         raise TableException('cannot write to database')
 
     # Check if the table already exists in the database
     exists = table_exists(table_name, database)
-
     if exists:
         # Raise exception
         raise TableException('table already exists in the database')
@@ -133,6 +129,64 @@ def add_table(table_name, database):
         # Raise exception
         raise TableException('error writing to file')
 
+def rename_table(table_name, database, new_name):
+    """Rename a table from the database.
+
+    Renames a given table to a new string
+
+    Arguments:
+        table_name -- Name of the table to rename
+        database -- Database that contains the table
+        new_name -- New name for the table
+    """
+    # Check for write access in the database
+    can_write = os.access(database, os.W_OK)
+    if not can_write:
+        # Raise exception
+        raise TableException('cannot write to database')
+
+    # Check that the table exists
+    exists = table_exists(table_name, database)
+    if not exists:
+        # Raise exception
+        raise TableException('table does not exist')
+
+    # Check if there is a table with the new name already
+    new_exists = table_exists(new_name, database)
+    if new_exists:
+        # Raise exception
+        raise TableException('there table %s already exists', %new_name)
+
+    # Rename table
+    try:
+        # Parse the file
+        breeze_file = os.path.join(database, 'root.breeze')
+        breeze_tree = XML.parse(breeze_file)
+        breeze_root = breeze_tree.getroot()
+
+        # Find the element
+        for table in breeze_root:
+            if table.text == table_name:
+                # Remove element
+                table.text = new_name
+                break
+
+        # Write changes to database
+        breeze_tree.write(breeze_file)
+
+        # Rename the directory
+        src = os.path.join(database, table_name)
+        dst = os.path.join(database, new_name)
+        os.rename(src, dst)
+
+    except IOError:
+        # Raise exception
+        raise TableException('could not rename table')
+
+    except OSError:
+        # Raise exception
+        raise TableException('cold not rename directory')
+
 def remove_table(table_name, database):
     """Remove a table from the database.
 
@@ -142,17 +196,14 @@ def remove_table(table_name, database):
         table_name -- Name of the table to create
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check for write access in the database
     can_write = os.access(database, os.W_OK)
-
     if not can_write:
         # Raise exception
         raise TableException('cannot write to database')
 
     # Check that the table exists
     exists = table_exists(table_name, database)
-
     if not exists:
         # Raise exception
         raise TableException('table does not exist')
@@ -196,7 +247,6 @@ def get_fieldlist(table_name, database):
         table_name -- Name of the table to create
         database -- Database to check (usually obtained from the Connector)
     """
-
     fieldlist = []
 
     # Parse the tableinfo.breeze file

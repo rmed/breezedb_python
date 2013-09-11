@@ -34,8 +34,7 @@ def field_exists(field_name, table_name, database):
         field_name -- Name of the field to check
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
-    """
-    
+    """    
     # Parse the tableinfo.breeze file
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
@@ -72,10 +71,8 @@ def get_fieldtype(field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check that the field exists
     exists = field_exists(field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise FieldException('field does not exist')
@@ -87,7 +84,6 @@ def get_fieldtype(field_name, table_name, database):
 
     # Get the type
     return field_root.find('type').text
-
 
 def add_field(field_name, field_type, table_name, database):
     """Add a field to the table.
@@ -101,17 +97,14 @@ def add_field(field_name, field_type, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check for write access in the database
     can_write = os.access(database, os.W_OK)
-
     if not can_write:
         # Raise exception
         raise FieldException('cannot write to database')
 
     # Check if the field already exists in the database
     exists = field_exists(field_name, table_name, database)
-
     if exists:
         # Raise exception
         raise FieldException('field already exists in the table')
@@ -152,6 +145,67 @@ def add_field(field_name, field_type, table_name, database):
         # Raise exception
         raise FieldException('error writing to file')
 
+def rename_field(field_name, table_name, database, new_name):
+    """Modify the name of a field.
+
+    Renames a given field to a new string
+
+    Arguments:
+        field_name -- Name of the field to rename
+        table_name -- Name of the table that contains the field
+        database -- Database that contains the table
+        new_name -- New name for the field
+    """
+    # Check for write access in the database
+    can_write = os.access(database, os.W_OK)
+    if not can_write:
+        # Raise exception
+        raise FieldException('cannot write to database')
+
+    # Check if the field exists in the database
+    exists = field_exists(field_name, table_name, database)
+    if not exists:
+        # Raise exception
+        raise FieldException('field does not exist in the table')
+
+    # Check if there is a field with the new name already
+    new_exists = field_exists(new_name, table_name, database)
+
+    if new_exists:
+        # Raise exception
+        raise FieldException('the field %s already exists', %new_name)
+
+    # Rename the field
+    try:
+        # Parse the file
+        # Rename the text in the tableinfo.breeze file
+        table_file = os.path.join(database, table_name, 'tableinfo.breeze')
+        table_tree = XML.parse(table_file)
+        table_root = table_tree.getroot()
+
+        # Find the element
+        for field in table_root:
+            if field.text == field_name:
+                # Rename element
+                field.text = new_name
+                break
+
+        # Write changes to database
+        table_tree.write(table_file)
+
+        # Rename the field file
+        src = os.path.join(database, table_name, field_name)
+        dst = os.path.join(database, table_name, new_name)
+        os.rename(src, dst)
+
+    except IOError:
+        # Raise exception
+        raise FieldException('could not rename the field')
+
+    except OSError:
+        # Raise exception
+        raise FieldException('could not rename the file')
+
 def remove_field(field_name, table_name, database):
     """Remove a field from the table.
 
@@ -162,17 +216,14 @@ def remove_field(field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check for write access in the database
     can_write = os.access(database, os.W_OK)
-
     if not can_write:
         # Raise exception
         raise FieldException('cannot write to database')
 
     # Check if the field exists in the database
     exists = field_exists(field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise FieldException('field does not exist in the table')
@@ -213,17 +264,14 @@ def empty_field(field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check for write access in the database
     can_write = os.access(database, os.W_OK)
-
     if not can_write:
         # Raise exception
         raise FieldException('cannot write to database')
 
     # Check if the field exists in the database
     exists = field_exists(field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise FieldException('field does not exist in the table')
@@ -250,12 +298,10 @@ def get_elementlist(field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     elemlist = []
 
     # Check that the field exists in the database
     exists = field_exists(field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise FieldException('field does not exist in the table')

@@ -53,7 +53,6 @@ def create_breezedb(path, name):
     """
     # Check for write access in the specified path
     can_write = os.access(path, os.W_OK)
-
     if not can_write:
         # Raise exception
         raise DBException('cannot write to path')

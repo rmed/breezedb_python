@@ -37,7 +37,6 @@ def element_exists(element_index, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check that the index is greater than zero
     if element_index < 0:
         # Raise exception
@@ -71,10 +70,8 @@ def get_element(element_index, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check that the element exists
     exists = element_exists(element_index, field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise ElementException('the element does not exist')
@@ -98,7 +95,6 @@ def find_element(to_find, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     indexlist = []
 
     # Parse the field file
@@ -127,10 +123,8 @@ def modify_element(element_index, new_content, field_name,
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check that the element exists
     exists = element_exists(element_index, field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise ElementException('the element does not exist')
@@ -160,10 +154,8 @@ def empty_element(element_index, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Check that the element exists
     exists = element_exists(element_index, field_name, table_name, database)
-
     if not exists:
         # Raise exception
         raise ElementException('the element does not exist')
@@ -190,7 +182,6 @@ def remove_row(element_index, table_name, database):
         table_name -- Name of the table from which to remove the row
         database -- Database to check (usually obtained from the Connector)
     """
-
     # Parse tableinfo.breeze file
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
