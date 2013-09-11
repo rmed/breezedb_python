@@ -17,7 +17,14 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import db
-import element
-import field
-import table
+"""breezedb.core
+
+This is the module that needs to be imported in order to use BreezeDB.
+This provides all the available operations and can be used in such a way:
+
+    import breezedb.core as breeze
+
+"""
+
+from operations import db, element, field, table
+

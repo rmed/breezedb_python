@@ -18,53 +18,32 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import xml.etree.ElementTree as XML
-import os, shutil
-import operations
+import shutil, os
 
-class ConnectorException(Exception):
-    """Class for exceptions in Connector module."""
+class DBException(Exception):
+    """Class for exceptions in DB module."""
     def __init__(self, value):
-        print 'Connector exception: ', value
+        print 'Database exception: ', value
 
-class Connector():
-    """Connector class.
+def get_tablelist(database):
+    """Get a list of tables.
 
-    Its purpose is to store the path to the database and call the 
-    required functions.
-
-    Attributes:
-        database -- database path
+    This function returns a list of tables contained in the database.
+    The tables are fetched from the root.breeze file.
     """
+    tablelist = []
 
-    def __init__(self, path):
-        """Initialization of the Connector.
+    # Parse the root.breeze file
+    breeze_file = os.path.join(database, 'root.breeze')
+    breeze_tree = XML.parse(breeze_file)
+    breeze_root = breeze_tree.getroot()
 
-        Arguments:
-            path -- Absolute path to the database directory
-        """
+    # Get all the tables of the database
+    for table in breeze_root:
+        tablelist.append(table.text)
 
-        self.database = path
-
-    def get_tablelist(self):
-        """Get a list of tables.
-
-        This function returns a list of tables contained in the database.
-        The tables are fetched from the root.breeze file.
-        """
-
-        tablelist = []
-
-        # Parse the root.breeze file
-        breeze_file = os.path.join(self.database, 'root.breeze')
-        breeze_tree = XML.parse(breeze_file)
-        breeze_root = breeze_tree.getroot()
-
-        # Get all the tables of the database
-        for table in breeze_root:
-            tablelist.append(table.text)
-
-        # Return the list
-        return tablelist
+    # Return the list
+    return tablelist
         
 def create_breezedb(path, name):
     """Create a database structure in the specified path.
@@ -72,13 +51,12 @@ def create_breezedb(path, name):
     Arguments:
         path -- Absolute path in which to create the database directory
     """
-
     # Check for write access in the specified path
     can_write = os.access(path, os.W_OK)
 
     if not can_write:
         # Raise exception
-        raise ConnectorException('cannot write to path')
+        raise DBException('cannot write to path')
 
     # Create the directory and an empty root.breeze file
     try:
@@ -94,11 +72,11 @@ def create_breezedb(path, name):
 
     except OSError:
         # Raise exception
-        raise ConnectorException('could not create base directory')
+        raise DBException('could not create base directory')
 
     except IOError:
         # Raise exception
-        raise ConnectorException('error creating the root.breeze file')
+        raise DBException('error creating the root.breeze file')
 
 def remove_breezedb(path):
     """Remove the breeze directory structure of the specified path.
@@ -106,7 +84,6 @@ def remove_breezedb(path):
     Arguments:
         path -- Absolute path to the database directory
     """
-
     # Check for write access and root.breeze in the specified path
     can_write = os.access(path, os.W_OK)
     breeze_file = os.path.join(path, 'root.breeze')
@@ -114,7 +91,7 @@ def remove_breezedb(path):
 
     if not can_write or not is_breezedb:
         # Raise exception
-        raise ConnectorException('cannot remove')
+        raise DBException('cannot remove')
 
     # Remove the directory
     try:
@@ -122,5 +99,5 @@ def remove_breezedb(path):
 
     except:
         # Raise exception
-        raise ConnectorException('could not remove the database')
+        raise DBException('could not remove the database')
 
