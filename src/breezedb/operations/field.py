@@ -25,7 +25,7 @@ class FieldException(Exception):
     def __init__(self, value):
         print 'Field exception: ', value
 
-def field_exists(field_name, table_name, database):
+def exists(field_name, table_name, database):
     """Check whether a field exists in the table or not.
 
     Returns True in case the field exits and False in case it does not.
@@ -61,7 +61,7 @@ def field_exists(field_name, table_name, database):
         # File does not exist
         return False
 
-def get_fieldtype(field_name, table_name, database):
+def get_type(field_name, table_name, database):
     """Get the data type of the field.
 
     Returns the content of the <type> tag in the field file.
@@ -72,8 +72,7 @@ def get_fieldtype(field_name, table_name, database):
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the field exists
-    exists = field_exists(field_name, table_name, database)
-    if not exists:
+    if not exists(field_name, table_name, database):
         # Raise exception
         raise FieldException('field does not exist')
 
@@ -85,7 +84,7 @@ def get_fieldtype(field_name, table_name, database):
     # Get the type
     return field_root.find('type').text
 
-def add_field(field_name, field_type, table_name, database):
+def add(field_name, field_type, table_name, database):
     """Add a field to the table.
 
     Add a new <field> element to the tableinfo.breeze file and create the
@@ -104,8 +103,7 @@ def add_field(field_name, field_type, table_name, database):
         raise FieldException('cannot write to database')
 
     # Check if the field already exists in the database
-    exists = field_exists(field_name, table_name, database)
-    if exists:
+    if exists(field_name, table_name, database):
         # Raise exception
         raise FieldException('field already exists in the table')
 
@@ -145,7 +143,7 @@ def add_field(field_name, field_type, table_name, database):
         # Raise exception
         raise FieldException('error writing to file')
 
-def rename_field(field_name, table_name, database, new_name):
+def rename(field_name, table_name, database, new_name):
     """Modify the name of a field.
 
     Renames a given field to a new string
@@ -163,15 +161,12 @@ def rename_field(field_name, table_name, database, new_name):
         raise FieldException('cannot write to database')
 
     # Check if the field exists in the database
-    exists = field_exists(field_name, table_name, database)
-    if not exists:
+    if not exists(field_name, table_name, database):
         # Raise exception
         raise FieldException('field does not exist in the table')
 
     # Check if there is a field with the new name already
-    new_exists = field_exists(new_name, table_name, database)
-
-    if new_exists:
+    if exists(new_name, table_name, database):
         # Raise exception
         raise FieldException('the field %s already exists', new_name)
 
@@ -206,7 +201,7 @@ def rename_field(field_name, table_name, database, new_name):
         # Raise exception
         raise FieldException('could not rename the file')
 
-def remove_field(field_name, table_name, database):
+def remove(field_name, table_name, database):
     """Remove a field from the table.
 
     Remove the corresponding file and <field> element from tableinfo.breeze
@@ -223,8 +218,7 @@ def remove_field(field_name, table_name, database):
         raise FieldException('cannot write to database')
 
     # Check if the field exists in the database
-    exists = field_exists(field_name, table_name, database)
-    if not exists:
+    if not exists(field_name, table_name, database):
         # Raise exception
         raise FieldException('field does not exist in the table')
 
@@ -254,7 +248,7 @@ def remove_field(field_name, table_name, database):
         # Raise exception
         raise FieldException('could not remove file')
 
-def empty_field(field_name, table_name, database):
+def empty(field_name, table_name, database):
     """Empty the contents of a field.
 
     Remove the all the <element> tags from the file but retain the <type>.
@@ -271,8 +265,7 @@ def empty_field(field_name, table_name, database):
         raise FieldException('cannot write to database')
 
     # Check if the field exists in the database
-    exists = field_exists(field_name, table_name, database)
-    if not exists:
+    if not exists(field_name, table_name, database):
         # Raise exception
         raise FieldException('field does not exist in the table')
 
@@ -301,8 +294,7 @@ def get_elementlist(field_name, table_name, database):
     elemlist = []
 
     # Check that the field exists in the database
-    exists = field_exists(field_name, table_name, database)
-    if not exists:
+    if not exists(field_name, table_name, database):
         # Raise exception
         raise FieldException('field does not exist in the table')
 

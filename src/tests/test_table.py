@@ -11,26 +11,26 @@ class TestTable(unittest.TestCase):
 
     def test_table_exists_true(self):
         # Check for a table that does exist
-        result = breeze.table.table_exists('cities', database)
+        result = breeze.table.exists('cities', database)
         self.assertEqual(True, result)
 
     def test_table_exists_false(self):
         # Check for a table that does not exist
-        result = breeze.table.table_exists('test', database)
+        result = breeze.table.exists('test', database)
         self.assertEqual(False, result)
 
     def test_add_table(self):
         # Add a new table to the database
-        breeze.table.add_table('new_table', database)
+        breeze.table.add('new_table', database)
 
     def test_remove_table_exists(self):
         # Remove the previously created table
-        breeze.table.remove_table('new_table', database)
+        breeze.table.remove('new_table', database)
 
     def test_remove_table_inexistent(self):
         # Try to remove the previously created table again
         with self.assertRaises(breeze.table.TableException):
-            breeze.table.remove_table('new_table', database)
+            breeze.table.remove('new_table', database)
 
     def test_get_fieldlist(self):
         # Get a list of fields from table 'languages'

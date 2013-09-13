@@ -25,7 +25,7 @@ class ElementException(Exception):
     def __init__(self, value):
         print 'Element exception: ', value
 
-def element_exists(element_index, field_name, table_name, database):
+def exists(element_index, field_name, table_name, database):
     """Check whether an element exist in the field.
 
     Returns True if the specified index is contained in the list or
@@ -56,7 +56,7 @@ def element_exists(element_index, field_name, table_name, database):
         # Is not contained
         return False
 
-def get_element(element_index, field_name, table_name, database):
+def get(element_index, field_name, table_name, database):
     """Get the data contained in an element.
 
     Returns the contained data in string format, so it must be parsed 
@@ -71,8 +71,7 @@ def get_element(element_index, field_name, table_name, database):
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the element exists
-    exists = element_exists(element_index, field_name, table_name, database)
-    if not exists:
+    if not exists(element_index, field_name, table_name, database):
         # Raise exception
         raise ElementException('the element does not exist')
 
@@ -84,7 +83,7 @@ def get_element(element_index, field_name, table_name, database):
     # Return element
     return field_root.findall('element')[element_index].text
 
-def find_element(to_find, field_name, table_name, database):
+def find(to_find, field_name, table_name, database):
     """Find elements in the field.
 
     Returns a list of indexes of elements that contain the specified data.
@@ -111,7 +110,7 @@ def find_element(to_find, field_name, table_name, database):
     # Return list
     return indexlist
 
-def modify_element(element_index, new_content, field_name,
+def modify(element_index, new_content, field_name,
                     table_name, database):
     """Modify the content of an element.
 
@@ -124,8 +123,7 @@ def modify_element(element_index, new_content, field_name,
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the element exists
-    exists = element_exists(element_index, field_name, table_name, database)
-    if not exists:
+    if not exists(element_index, field_name, table_name, database):
         # Raise exception
         raise ElementException('the element does not exist')
 
@@ -141,7 +139,7 @@ def modify_element(element_index, new_content, field_name,
     # Save to file
     field_tree.write(field_file)
 
-def empty_element(element_index, field_name, table_name, database):
+def empty(element_index, field_name, table_name, database):
     """Empty the content of an element.
 
     The content is emptied instead of removing the whole element because
@@ -155,8 +153,7 @@ def empty_element(element_index, field_name, table_name, database):
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the element exists
-    exists = element_exists(element_index, field_name, table_name, database)
-    if not exists:
+    if not exists(element_index, field_name, table_name, database):
         # Raise exception
         raise ElementException('the element does not exist')
 
@@ -191,9 +188,7 @@ def remove_row(element_index, table_name, database):
     for field in table_root:
 
         # Check that the element exists in the current field
-        exists = element_exists(element_index, field.text, table_name, database)
-
-        if not exists:
+        if not exists(element_index, field.text, table_name, database):
             # Raise exception
             raise ElementException('the element does not exist')
 

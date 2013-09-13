@@ -45,7 +45,7 @@ def get_tablelist(database):
     # Return the list
     return tablelist
         
-def create_breezedb(path, name):
+def create(path, name):
     """Create a database structure in the specified path.
 
     Arguments:
@@ -77,7 +77,7 @@ def create_breezedb(path, name):
         # Raise exception
         raise DBException('error creating the root.breeze file')
 
-def remove_breezedb(path):
+def remove(path):
     """Remove the breeze directory structure of the specified path.
 
     Arguments:

@@ -25,7 +25,7 @@ class TableException(Exception):
     def __init__(self, value):
         print 'Table exception: ', value
 
-def table_exists(table_name, database):
+def exists(table_name, database):
     """Check whether a table exists in the database or not.
 
     Returns True in case the table exits and False in case it does not.
@@ -73,7 +73,7 @@ def table_exists(table_name, database):
         # File does not exist
         return False
 
-def add_table(table_name, database):
+def add(table_name, database):
     """Add a table to the database.
 
     Add a new <table> element to the root.breeze file and create the
@@ -90,8 +90,7 @@ def add_table(table_name, database):
         raise TableException('cannot write to database')
 
     # Check if the table already exists in the database
-    exists = table_exists(table_name, database)
-    if exists:
+    if exists(table_name, database):
         # Raise exception
         raise TableException('table already exists in the database')
 
@@ -129,7 +128,7 @@ def add_table(table_name, database):
         # Raise exception
         raise TableException('error writing to file')
 
-def rename_table(table_name, database, new_name):
+def rename(table_name, database, new_name):
     """Rename a table from the database.
 
     Renames a given table to a new string
@@ -146,14 +145,12 @@ def rename_table(table_name, database, new_name):
         raise TableException('cannot write to database')
 
     # Check that the table exists
-    exists = table_exists(table_name, database)
-    if not exists:
+    if not exists(table_name, database):
         # Raise exception
         raise TableException('table does not exist')
 
     # Check if there is a table with the new name already
-    new_exists = table_exists(new_name, database)
-    if new_exists:
+    if exists(new_name, database):
         # Raise exception
         raise TableException('there table %s already exists', new_name)
 
@@ -187,7 +184,7 @@ def rename_table(table_name, database, new_name):
         # Raise exception
         raise TableException('cold not rename directory')
 
-def remove_table(table_name, database):
+def remove(table_name, database):
     """Remove a table from the database.
 
     Removes the corresponding directory and <table> element from root.breeze
@@ -203,8 +200,7 @@ def remove_table(table_name, database):
         raise TableException('cannot write to database')
 
     # Check that the table exists
-    exists = table_exists(table_name, database)
-    if not exists:
+    if not exists(table_name, database):
         # Raise exception
         raise TableException('table does not exist')
 

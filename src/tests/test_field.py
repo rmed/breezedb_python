@@ -12,51 +12,51 @@ class TestField(unittest.TestCase):
 
     def test_field_exists_true(self):
         # Check for a field that does exist
-        result = breeze.field.field_exists('id', table, database)
+        result = breeze.field.exists('id', table, database)
         self.assertEqual(True, result)
 
     def test_field_exists_false(self):
         # Check for a field that does not exist
-        result = breeze.field.field_exists('test', table, database)
+        result = breeze.field.exists('test', table, database)
         self.assertEqual(False, result)
 
     def test_get_fieldtype(self):
         # Return the field type of 'id' (int)
         expected = 'int'
-        result = breeze.field.get_fieldtype('id', table, database)
+        result = breeze.field.get_type('id', table, database)
         self.assertEqual(expected, result)
 
     def test_get_fieldtype_inexistent(self):
         # Attemp to get the field type of an inexistent field
         with self.assertRaises(breeze.field.FieldException):
-            breeze.field.get_fieldtype('test', table, database)
+            breeze.field.get_type('test', table, database)
 
     def test_add_field(self):
         # Add a new field to the table
-        breeze.field.add_field('new_field', 'string', table, database)
+        breeze.field.add('new_field', 'string', table, database)
 
     def test_add_field_existing(self):
         # Attempt to add an already existing field
         with self.assertRaises(breeze.field.FieldException):
-            breeze.field.add_field('new_field', 'string', table, database) 
+            breeze.field.add('new_field', 'string', table, database) 
 
     def test_remove_field(self):
         # Remove the previously created field
-        breeze.field.remove_field('new_field', table, database)
+        breeze.field.remove('new_field', table, database)
 
     def test_remove_field_inexistent(self):
         # Attempt to remove the field again
         with self.assertRaises(breeze.field.FieldException):
-            breeze.field.remove_field('new_field', table, database)
+            breeze.field.remove('new_field', table, database)
 
     def test_empty_field(self):
         # Empty the contents of the 'name' field
-        breeze.field.empty_field('name', table, database)
+        breeze.field.empty('name', table, database)
 
     def test_empty_field_inexistent(self):
         # Attempt to empty the contents of an inexistent field
         with self.assertRaises(breeze.field.FieldException):
-            breeze.field.empty_field('none', table, database)
+            breeze.field.empty('none', table, database)
 
     def test_get_element_list(self):
         # Get an element list from the 'last_name' field
