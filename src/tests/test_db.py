@@ -3,19 +3,7 @@ import os, sys, shutil
 
 sys.path[0:0] = [os.path.join(os.path.dirname(__file__), ".."),]
 
-from connector import Connector
-
-# Create test connector
-connector_tester = Connector('db_temp')
-
-class TestConnector(unittest.TestCase):
-
-    def test_get_tablelist(self):
-        expected = ['cities', 'languages', 'users']
-        result = connector_tester.get_tablelist()
-        self.assertEqual(expected, result)
-
-import connector
+import breezedb.core as breeze
 
 class TestDBOperations(unittest.TestCase):
 
@@ -23,30 +11,30 @@ class TestDBOperations(unittest.TestCase):
         # Create a new database
         path = './'
         name = 'test_database1'
-        connector.create_breezedb(path, name)
+        breeze.db.create(path, name)
 
     def test_create_breezedb_existing(self):
         # Try to create the database again
-        with self.assertRaises(connector.ConnectorException):
+        with self.assertRaises(breeze.db.DBException):
             path = './'
             name = 'test_database1'
-            connector.create_breezedb(path, name)
+            breeze.db.create(path, name)
 
     def test_remove_breezedb(self):
         # Remove previously created database
         path = 'test_database1'
-        connector.remove_breezedb(path)
+        breeze.db.remove(path)
         # Remove temp database
         temp = 'db_temp'
-        connector.remove_breezedb(temp)
+        breeze.db.remove(temp)
 
     def test_remove_breezedb_inexistent(self):
         # Try to remove the databases again
-        with self.assertRaises(connector.ConnectorException):
+        with self.assertRaises(breeze.db.DBException):
             path = 'test_database1'
-            connector.remove_breezedb(path)
+            breeze.db.remove(path)
             temp = 'db_temp'
-            connector.remove_breezedb(temp)
+            breeze.db.remove(temp)
 
 if __name__ == "__main__":
     # Remove previous temp copy
