@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# This file is part of BreezeDB - https://github.com/RMed/breeze_db_python
+#
+# This file is part of BreezeDB - https://github.com/RMed/breezedb_python
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
@@ -44,7 +45,7 @@ def get_tablelist(database):
     # Return the list
     return tablelist
         
-def create(path, name):
+def create_db(path, name):
     """Create a database structure in the specified path.
 
     Arguments:
@@ -76,7 +77,7 @@ def create(path, name):
         # Raise exception
         raise DBException('error creating the root.breeze file')
 
-def remove(path):
+def remove_db(path):
     """Remove the breeze directory structure of the specified path.
 
     Arguments:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# This file is part of BreezeDB - https://github.com/RMed/breeze_db_python
+#
+# This file is part of BreezeDB - https://github.com/RMed/breezedb_python
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
@@ -24,7 +25,7 @@ class TableException(Exception):
     def __init__(self, value):
         print 'Table exception: ', value
 
-def exists(table_name, database):
+def table_exists(table_name, database):
     """Check whether a table exists in the database or not.
 
     Returns True in case the table exits and False in case it does not.
@@ -39,28 +40,28 @@ def exists(table_name, database):
     breeze_root = breeze_tree.getroot()   
  
     # Check if the table is listed
-    table_exists = False
+    exists = False
     for table in breeze_root:
         if table.text == table_name:
             # Table exists in the file
-            table_exists = True
+            exists = True
             break
 
     # Does the table exist in the file?
-    if not table_exists:
+    if not exists:
         return False
 
     # Check if the directory corresponding to the table exists
     table_path = os.path.join(database, table_name)
     if os.path.exists(table_path):
         # Directory exists
-        table_exists = True
+        exists = True
     else:
         # Directory does not exist
-        table_exists  = False
+        exists  = False
 
     # Does the directory exist?
-    if not table_exists:
+    if not exists:
         return False
 
     # Check if the tableinfo.breeze file exists
@@ -72,7 +73,7 @@ def exists(table_name, database):
         # File does not exist
         return False
 
-def add(table_name, database):
+def create_table(table_name, database):
     """Add a table to the database.
 
     Add a new <table> element to the root.breeze file and create the
@@ -89,7 +90,7 @@ def add(table_name, database):
         raise TableException('cannot write to database')
 
     # Check if the table already exists in the database
-    if exists(table_name, database):
+    if table_exists(table_name, database):
         # Raise exception
         raise TableException('table already exists in the database')
 
@@ -127,7 +128,7 @@ def add(table_name, database):
         # Raise exception
         raise TableException('error writing to file')
 
-def rename(table_name, database, new_name):
+def rename_table(table_name, database, new_name):
     """Rename a table from the database.
 
     Renames a given table to a new string
@@ -144,12 +145,12 @@ def rename(table_name, database, new_name):
         raise TableException('cannot write to database')
 
     # Check that the table exists
-    if not exists(table_name, database):
+    if not table_exists(table_name, database):
         # Raise exception
         raise TableException('table does not exist')
 
     # Check if there is a table with the new name already
-    if exists(new_name, database):
+    if table_exists(new_name, database):
         # Raise exception
         raise TableException('there table %s already exists', new_name)
 
@@ -183,7 +184,7 @@ def rename(table_name, database, new_name):
         # Raise exception
         raise TableException('cold not rename directory')
 
-def remove(table_name, database):
+def remove_table(table_name, database):
     """Remove a table from the database.
 
     Removes the corresponding directory and <table> element from root.breeze
@@ -199,7 +200,7 @@ def remove(table_name, database):
         raise TableException('cannot write to database')
 
     # Check that the table exists
-    if not exists(table_name, database):
+    if not table_exists(table_name, database):
         # Raise exception
         raise TableException('table does not exist')
 
@@ -233,7 +234,7 @@ def remove(table_name, database):
         # Raise exception
         raise TableException('error writing to file')
 
-def get_fieldlist(table_name, database):
+def get_field_list(table_name, database):
     """Get a list of fields.
 
     Returns a list of fields present in the specified table.

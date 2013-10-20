@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# This file is part of BreezeDB - https://github.com/RMed/breeze_db_python
+#
+# This file is part of BreezeDB - https://github.com/RMed/breezedb_python
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
@@ -24,7 +25,7 @@ class ElementException(Exception):
     def __init__(self, value):
         print 'Element exception: ', value
 
-def exists(element_index, field_name, table_name, database):
+def element_exists(element_index, field_name, table_name, database):
     """Check whether an element exist in the field.
 
     Returns True if the specified index is contained in the list or
@@ -55,7 +56,7 @@ def exists(element_index, field_name, table_name, database):
         # Is not contained
         return False
 
-def get(element_index, field_name, table_name, database):
+def get_element(element_index, field_name, table_name, database):
     """Get the data contained in an element.
 
     Returns the contained data in string format, so it must be parsed 
@@ -70,7 +71,7 @@ def get(element_index, field_name, table_name, database):
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the element exists
-    if not exists(element_index, field_name, table_name, database):
+    if not element_exists(element_index, field_name, table_name, database):
         # Raise exception
         raise ElementException('the element does not exist')
 
@@ -82,7 +83,7 @@ def get(element_index, field_name, table_name, database):
     # Return element
     return field_root.findall('element')[element_index].text
 
-def find(to_find, field_name, table_name, database):
+def find_element(to_find, field_name, table_name, database):
     """Find elements in the field.
 
     Returns a list of indexes of elements that contain the specified data.
@@ -109,7 +110,7 @@ def find(to_find, field_name, table_name, database):
     # Return list
     return indexlist
 
-def modify(element_index, new_content, field_name,
+def modify_element(element_index, new_content, field_name,
                     table_name, database):
     """Modify the content of an element.
 
@@ -122,7 +123,7 @@ def modify(element_index, new_content, field_name,
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the element exists
-    if not exists(element_index, field_name, table_name, database):
+    if not element_exists(element_index, field_name, table_name, database):
         # Raise exception
         raise ElementException('the element does not exist')
 
@@ -138,7 +139,7 @@ def modify(element_index, new_content, field_name,
     # Save to file
     field_tree.write(field_file)
 
-def empty(element_index, field_name, table_name, database):
+def empty_element(element_index, field_name, table_name, database):
     """Empty the content of an element.
 
     The content is emptied instead of removing the whole element because
@@ -152,7 +153,7 @@ def empty(element_index, field_name, table_name, database):
         database -- Database to check (usually obtained from the Connector)
     """
     # Check that the element exists
-    if not exists(element_index, field_name, table_name, database):
+    if not element_exists(element_index, field_name, table_name, database):
         # Raise exception
         raise ElementException('the element does not exist')
 
@@ -167,7 +168,7 @@ def empty(element_index, field_name, table_name, database):
     # Save to file
     field_tree.write(field_file)
 
-def remove_row(element_index, table_name, database):
+def remove_element_row(element_index, table_name, database):
     """Remove an element row from the specified table.
 
     Removes all the elements that correspond to that index and then
@@ -187,7 +188,7 @@ def remove_row(element_index, table_name, database):
     for field in table_root:
 
         # Check that the element exists in the current field
-        if not exists(element_index, field.text, table_name, database):
+        if not element_exists(element_index, field.text, table_name, database):
             # Raise exception
             raise ElementException('the element does not exist')
 
