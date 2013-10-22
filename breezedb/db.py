@@ -33,16 +33,13 @@ def get_tablelist(database):
     """
     tablelist = []
 
-    # Parse the root.breeze file
     breeze_file = os.path.join(database, 'root.breeze')
     breeze_tree = XML.parse(breeze_file)
     breeze_root = breeze_tree.getroot()
 
-    # Get all the tables of the database
     for table in breeze_root:
         tablelist.append(table.text)
 
-    # Return the list
     return tablelist
         
 def create_db(path, name):
@@ -51,30 +48,23 @@ def create_db(path, name):
     Arguments:
         path -- Absolute path in which to create the database directory
     """
-    # Check for write access in the specified path
     can_write = os.access(path, os.W_OK)
     if not can_write:
-        # Raise exception
         raise DBException('cannot write to path')
 
-    # Create the directory and an empty root.breeze file
     try:
-        # Create directory
         newdir = os.path.join(path, name)
         os.makedirs(newdir)
 
-        # Create root.breeze file
         breeze_file = os.path.join(path, name, 'root.breeze')
         breeze_tag = XML.Element('breeze')
         breeze_tree = XML.ElementTree(breeze_tag)
         breeze_tree.write(breeze_file)
 
     except OSError:
-        # Raise exception
         raise DBException('could not create base directory')
 
     except IOError:
-        # Raise exception
         raise DBException('error creating the root.breeze file')
 
 def remove_db(path):
@@ -83,20 +73,16 @@ def remove_db(path):
     Arguments:
         path -- Absolute path to the database directory
     """
-    # Check for write access and root.breeze in the specified path
     can_write = os.access(path, os.W_OK)
     breeze_file = os.path.join(path, 'root.breeze')
     is_breezedb = os.path.isfile(breeze_file)
 
     if not can_write or not is_breezedb:
-        # Raise exception
         raise DBException('cannot remove')
 
-    # Remove the directory
     try:
         shutil.rmtree(path)
 
     except:
-        # Raise exception
         raise DBException('could not remove the database')
 

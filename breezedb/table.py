@@ -34,43 +34,32 @@ def table_exists(table_name, database):
         table_name -- Name of the table to check
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check the root.breeze file for the table
     breeze_file = os.path.join(database, 'root.breeze')
     breeze_tree = XML.parse(breeze_file)
     breeze_root = breeze_tree.getroot()   
  
-    # Check if the table is listed
     exists = False
     for table in breeze_root:
         if table.text == table_name:
-            # Table exists in the file
             exists = True
             break
 
-    # Does the table exist in the file?
     if not exists:
         return False
 
-    # Check if the directory corresponding to the table exists
     table_path = os.path.join(database, table_name)
     if os.path.exists(table_path):
-        # Directory exists
         exists = True
     else:
-        # Directory does not exist
         exists  = False
 
-    # Does the directory exist?
     if not exists:
         return False
 
-    # Check if the tableinfo.breeze file exists
     table_file = os.path.join(table_path, 'tableinfo.breeze')
     if os.path.isfile(table_file):
-        # File exists
         return True
     else:
-        # File does not exist
         return False
 
 def create_table(table_name, database):
@@ -83,49 +72,36 @@ def create_table(table_name, database):
         table_name -- Name of the table to create
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check for write access in the database
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        # Raise exception
         raise TableException('cannot write to database')
 
-    # Check if the table already exists in the database
     if table_exists(table_name, database):
-        # Raise exception
         raise TableException('table already exists in the database')
 
-    # Add <table> element to root.breeze and create table structure
     try:
-        # Create directory
         newdir = os.path.join(database, table_name)
         os.makedirs(newdir, 0755)
 
-        # Create tableinfo.breeze file
         table_file = os.path.join(newdir, 'tableinfo.breeze')
         breeze_tag = XML.Element('breeze')
         table_tree = XML.ElementTree(breeze_tag)
         table_tree.write(table_file)
 
-        # Add <table> element to root.breeze
-        # Parse the file
         breeze_file = os.path.join(database, 'root.breeze')
         breeze_tree = XML.parse(breeze_file)
         breeze_root = breeze_tree.getroot()
 
-        # Add element to root
         new_table = XML.Element('table')
         new_table.text = table_name
         breeze_root.append(new_table)
 
-        # Write to file
         breeze_tree.write(breeze_file)
 
     except OSError:
-        # Raise exception
         raise TableException('could not create base directory')
 
     except IOError:
-        # Raise exception
         raise TableException('error writing to file')
 
 def rename_table(table_name, database, new_name):
@@ -138,50 +114,36 @@ def rename_table(table_name, database, new_name):
         database -- Database that contains the table
         new_name -- New name for the table
     """
-    # Check for write access in the database
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        # Raise exception
         raise TableException('cannot write to database')
 
-    # Check that the table exists
     if not table_exists(table_name, database):
-        # Raise exception
         raise TableException('table does not exist')
 
-    # Check if there is a table with the new name already
     if table_exists(new_name, database):
-        # Raise exception
         raise TableException('there table %s already exists', new_name)
 
-    # Rename table
     try:
-        # Parse the file
         breeze_file = os.path.join(database, 'root.breeze')
         breeze_tree = XML.parse(breeze_file)
         breeze_root = breeze_tree.getroot()
 
-        # Find the element
         for table in breeze_root:
             if table.text == table_name:
-                # Remove element
                 table.text = new_name
                 break
 
-        # Write changes to database
         breeze_tree.write(breeze_file)
 
-        # Rename the directory
         src = os.path.join(database, table_name)
         dst = os.path.join(database, new_name)
         os.rename(src, dst)
 
     except IOError:
-        # Raise exception
         raise TableException('could not rename table')
 
     except OSError:
-        # Raise exception
         raise TableException('cold not rename directory')
 
 def remove_table(table_name, database):
@@ -193,45 +155,32 @@ def remove_table(table_name, database):
         table_name -- Name of the table to create
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check for write access in the database
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        # Raise exception
         raise TableException('cannot write to database')
 
-    # Check that the table exists
     if not table_exists(table_name, database):
-        # Raise exception
         raise TableException('table does not exist')
 
-    # Remove table
     try:
-        # Remove <table> element from root.breeze
-        # Parse the file
         breeze_file = os.path.join(database, 'root.breeze')
         breeze_tree = XML.parse(breeze_file)
         breeze_root = breeze_tree.getroot()
 
-        # Find the element
         for table in breeze_root:
             if table.text == table_name:
-                # Remove element
                 breeze_root.remove(table)
                 break
 
-        # Write changes to database
         breeze_tree.write(breeze_file)
 
-        # Remove the directory
         table_dir = os.path.join(database, table_name)
         shutil.rmtree(table_dir)
 
     except OSError:
-        # Raise exception
         raise TableException('could not remove table directory')
 
     except IOError:
-        # Raise exception
         raise TableException('error writing to file')
 
 def get_field_list(table_name, database):
@@ -245,15 +194,12 @@ def get_field_list(table_name, database):
     """
     fieldlist = []
 
-    # Parse the tableinfo.breeze file
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
     table_root = table_tree.getroot()
 
-    # Get all the fields of the table
     for field in table_root:
         fieldlist.append(field.text)
 
-    # Return the list
     return fieldlist
 

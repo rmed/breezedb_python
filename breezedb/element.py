@@ -37,23 +37,17 @@ def element_exists(element_index, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check that the index is greater than zero
     if element_index < 0:
-        # Raise exception
         raise ElementException('index needs to be a positive integer')
 
-    # Parse the field file
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
     field_root = field_tree.getroot()
 
-    # Compare the index provided with last element's
     last_index = int(field_root[-1].get('index'))
     if element_index <= last_index:
-        # Is contained
         return True
     else:
-        # Is not contained
         return False
 
 def get_element(element_index, field_name, table_name, database):
@@ -70,17 +64,13 @@ def get_element(element_index, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check that the element exists
     if not element_exists(element_index, field_name, table_name, database):
-        # Raise exception
         raise ElementException('the element does not exist')
 
-    # Parse the field file
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
     field_root = field_tree.getroot()
 
-    # Return element
     return field_root.findall('element')[element_index].text
 
 def find_element(to_find, field_name, table_name, database):
@@ -96,18 +86,14 @@ def find_element(to_find, field_name, table_name, database):
     """
     indexlist = []
 
-    # Parse the field file
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
     field_root = field_tree.getroot()
 
-    # Get the index of every occurrence
     for element in field_root.iter('element'):
-        # Check if the content to find is contained
         if string.lower(str(to_find)) in string.lower(str(element.text)):
             indexlist.append(element.get('index'))
 
-    # Return list
     return indexlist
 
 def modify_element(element_index, new_content, field_name,
@@ -122,21 +108,15 @@ def modify_element(element_index, new_content, field_name,
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check that the element exists
     if not element_exists(element_index, field_name, table_name, database):
-        # Raise exception
         raise ElementException('the element does not exist')
 
-    # Parse the field file
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
     field_root = field_tree.getroot()
 
-    # Modify the content
-    # Add str() because the data must be saved as string to the file
     field_root.findall('element')[element_index].text = str(new_content)
 
-    # Save to file
     field_tree.write(field_file)
 
 def empty_element(element_index, field_name, table_name, database):
@@ -152,20 +132,15 @@ def empty_element(element_index, field_name, table_name, database):
         table_name -- Name of the table that contains the field
         database -- Database to check (usually obtained from the Connector)
     """
-    # Check that the element exists
     if not element_exists(element_index, field_name, table_name, database):
-        # Raise exception
         raise ElementException('the element does not exist')
 
-    # Parse the field file
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
     field_root = field_tree.getroot()
 
-    # Empty the element
     field_root.findall('element')[element_index].text = ""
 
-    # Save to file
     field_tree.write(field_file)
 
 def remove_element_row(element_index, table_name, database):
@@ -179,40 +154,28 @@ def remove_element_row(element_index, table_name, database):
         table_name -- Name of the table from which to remove the row
         database -- Database to check (usually obtained from the Connector)
     """
-    # Parse tableinfo.breeze file
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
     table_root = table_tree.getroot()
 
-    # Loop through the fields
     for field in table_root:
 
-        # Check that the element exists in the current field
         if not element_exists(element_index, field.text, table_name, database):
-            # Raise exception
             raise ElementException('the element does not exist')
 
         try:
-            # Parse the field file
             field_file = os.path.join(database, table_name, field.text)
             field_tree = XML.parse(field_file)
             field_root = field_tree.getroot()        
 
-            # Remove the element
             field_root.remove(field_root.findall('element')[element_index])
 
-            # Update the remaining indexes
             for element in field_root.iter('element'):
-                # Check if the index is greater than the one deleted
                 if int(element.get('index')) > element_index:
-                    # Set the new value
-                    # Remember that it is saved as string
                     element.set('index', str(int(element.get('index')) - 1))
 
-            # Save to file
             field_tree.write(field_file)
 
         except OSError:
-            # Raise exception
             raise ElementException('could not remove element')
 
