@@ -17,23 +17,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+.. module:: field
+    :platform: Unix, Windows
+    :synopsis: Field related operations.
+
+.. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
+
+"""
+
 import xml.etree.ElementTree as XML
 import os
 
 class FieldException(Exception):
-    """Class for exceptions in Field module."""
+    """Class for exceptions in field module."""
     def __init__(self, value):
         print 'Field exception: ', value
 
 def field_exists(field_name, table_name, database):
     """Check whether a field exists in the table or not.
 
-    Returns True in case the field exits and False in case it does not.
+    :param str field_name: name of the field to check
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
 
-    Arguments:
-        field_name -- Name of the field to check
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :returns: True or False
+
     """    
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
@@ -55,14 +64,16 @@ def field_exists(field_name, table_name, database):
         return False
 
 def get_field_type(field_name, table_name, database):
-    """Get the data type of the field.
+    """Get the data type of a field from the <type> tag.
 
-    Returns the content of the <type> tag in the field file.
+    :param str field_name: name of the field to get the type from
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
 
-    Arguments:
-        field_name -- Name of the field to check
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :returns str: type of the field
+
+    :raises FieldException: field does not exist
+
     """
     if not field_exists(field_name, table_name, database):
         raise FieldException('field does not exist')
@@ -74,16 +85,19 @@ def get_field_type(field_name, table_name, database):
     return field_root.find('type').text
 
 def create_field(field_name, field_type, table_name, database):
-    """Add a field to the table.
+    """Create a new field in the table.
 
     Add a new <field> element to the tableinfo.breeze file and create the
     corresponding field structure.
 
-    Arguments:
-        field_name -- Name of the field to add
-        field_type -- Data type that is going to be stored in the field
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :param str field_name: name for the new field
+    :param str field_type: type of the new field
+    :param str table_name: name of the table that will contain the field
+    :param str database: path to the database
+
+    :raises FieldException: database is not writable
+    :raises FieldException: a field `field_name` already exists
+
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
@@ -119,15 +133,17 @@ def create_field(field_name, field_type, table_name, database):
         raise FieldException('error writing to file')
 
 def rename_field(field_name, table_name, database, new_name):
-    """Modify the name of a field.
+    """Rename a field.
 
-    Renames a given field to a new string
+    :param str field_name: current name of the field
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
+    :param str new_name: new name for the field
 
-    Arguments:
-        field_name -- Name of the field to rename
-        table_name -- Name of the table that contains the field
-        database -- Database that contains the table
-        new_name -- New name for the field
+    :raises FieldException: database is not writable
+    :raises FieldException: the field to rename does not exist
+    :raises FieldException: a field `new_name` already exists
+
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
@@ -164,12 +180,16 @@ def rename_field(field_name, table_name, database, new_name):
 def remove_field(field_name, table_name, database):
     """Remove a field from the table.
 
-    Remove the corresponding file and <field> element from tableinfo.breeze
+    Remove the corresponding file and <field> element
+    from the tableinfo.breeze file
 
-    Arguments:
-        field_name -- Name of the field to remove
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :param str field_name: name of the field to remove
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
+    
+    :raises FieldException: database is not writable
+    :raises FieldException: field does not exist
+
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
@@ -199,12 +219,16 @@ def remove_field(field_name, table_name, database):
 def empty_field(field_name, table_name, database):
     """Empty the contents of a field.
 
-    Remove the all the <element> tags from the file but retain the <type>.
+    Remove the all the <element> tags from the file but
+    preserve the <type> tab.
 
-    Arguments:
-        field_name -- Name of the field to empty
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :param str field_name: name of the field to empty
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
+
+    :raises FieldException: database is not writable
+    :raises FieldException: field does not exist
+
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
@@ -223,14 +247,16 @@ def empty_field(field_name, table_name, database):
     field_tree.write(field_file)
 
 def get_element_list(field_name, table_name, database):
-    """Get a list of elements.
+    """Get a list of elements contained in the field.
 
-    Returns a list of elements present in the specified field.
+    :param str field_name: name of the field to get the elements from
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
 
-    Arguments:
-        field_name -- Name of the field to check
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :returns: list of elements
+
+    :raises FieldException: field does not exist
+
     """
     elemlist = []
 

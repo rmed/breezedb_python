@@ -17,25 +17,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+.. module:: element
+    :platform: Unix, Windows
+    :synopsis: Element related operations.
+
+.. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
+
+"""
+
 import xml.etree.ElementTree as XML
 import os, string
 
 class ElementException(Exception):
-    """Class for exceptions in Element module."""
+    """Class for exceptions in element module."""
     def __init__(self, value):
         print 'Element exception: ', value
 
 def element_exists(element_index, field_name, table_name, database):
     """Check whether an element exist in the field.
 
-    Returns True if the specified index is contained in the list or
-    False otherwise.
+    :param int element_index: index of the element to check
+    :param str field_name: name of the field that contains the element
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
 
-    Arguments:
-        element_index -- Index of the element to check (positive integer)
-        field_name -- Name of the field that contains the element
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :returns: True or false
+
+    :raises ElementException: supplied index is not a positive integer
+
     """
     if element_index < 0:
         raise ElementException('index needs to be a positive integer')
@@ -50,19 +60,21 @@ def element_exists(element_index, field_name, table_name, database):
     else:
         return False
 
-def get_element(element_index, field_name, table_name, database):
+def get_element_content(element_index, field_name, table_name, database):
     """Get the data contained in an element.
 
-    Returns the contained data in string format, so it must be parsed 
+    Returns the contained data as a string, so it must be parsed 
     accordingly.
 
-    TODO: Parse the data automatically given a list of available types.
+    .. todo:: Parse the data automatically given a list of available types.
 
-    Arguments:
-        element_index -- Index of the element to check (positive integer)
-        field_name -- Name of the field that contains the element
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :param int element_index: index of the element
+    :param str field_name: name of the field that contains the element
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
+
+    :returns str: content of the element
+
     """
     if not element_exists(element_index, field_name, table_name, database):
         raise ElementException('the element does not exist')
@@ -76,13 +88,13 @@ def get_element(element_index, field_name, table_name, database):
 def find_element(to_find, field_name, table_name, database):
     """Find elements in the field.
 
-    Returns a list of indexes of elements that contain the specified data.
+    :param str to_find: data to find
+    :param str field_name: name of the field that contains the element
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
 
-    Arguments:
-        to_find -- Content to find in the database
-        field_name -- Name of the field that contains the element
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :returns: list of indexes that match the criteria
+
     """
     indexlist = []
 
@@ -100,13 +112,14 @@ def modify_element(element_index, new_content, field_name,
                     table_name, database):
     """Modify the content of an element.
 
-    Substitute the element's current content with the one provided.
+    :param int element_index: index of the element to modify
+    :param str new_content: new content to store in the element
+    :param str field_name: name of the field that contains the element
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
 
-    Arguments:
-        element_index -- Index of the element to modify (positive integer)
-        field_name -- Name of the field that contains the element
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :raises ElementException: element does not exist
+
     """
     if not element_exists(element_index, field_name, table_name, database):
         raise ElementException('the element does not exist')
@@ -126,12 +139,15 @@ def empty_element(element_index, field_name, table_name, database):
     a single element cannot be removed, as the indexes of other fields
     would not match.
 
-    Arguments:
-        element_index -- Index of the element to empty (positive integer)
-        field_name -- Name of the field that contains the element
-        table_name -- Name of the table that contains the field
-        database -- Database to check (usually obtained from the Connector)
+    :param int element_index: index of the element to empty
+    :param str field_name: name of the field that contains the element
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
+
+    :raises ElementException: element does not exist
+
     """
+
     if not element_exists(element_index, field_name, table_name, database):
         raise ElementException('the element does not exist')
 
@@ -147,12 +163,16 @@ def remove_element_row(element_index, table_name, database):
     """Remove an element row from the specified table.
 
     Removes all the elements that correspond to that index and then
-    updates the rest of the indexes in the file.
+    updates the rest of the indexes of the files.
 
-    Arguments:
-        element_index -- Index of the row to remove (positive integer)
-        table_name -- Name of the table from which to remove the row
-        database -- Database to check (usually obtained from the Connector)
+    :param int element_index: index of the element row to remove
+    :param str field_name: name of the field that contains the element
+    :param str table_name: name of the table that contains the field
+    :param str database: path to the database
+
+    :raises ElementException: element does not exist
+    :raises ElementException: element row cannot be removed
+
     """
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
