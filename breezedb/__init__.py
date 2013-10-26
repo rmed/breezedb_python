@@ -21,4 +21,4 @@ from db import *
 from table import *
 from field import *
 from element import *
-
+from breeze_exceptions import *

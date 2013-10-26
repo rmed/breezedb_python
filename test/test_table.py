@@ -29,13 +29,13 @@ class TestTable(unittest.TestCase):
 
     def test_remove_table_inexistent(self):
         # Try to remove the previously created table again
-        with self.assertRaises(breezedb.TableException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.remove_table('new_table', database)
 
-    def test_get_fieldlist(self):
+    def test_get_field_list(self):
         # Get a list of fields from table 'languages'
         expected = ['name', 'cross_platform']
-        result = breezedb.get_fieldlist('languages', database)
+        result = breezedb.get_field_list('languages', database)
         self.assertEqual(expected, result)
 
 if __name__ == "__main__":

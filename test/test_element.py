@@ -21,16 +21,16 @@ class TestElement(unittest.TestCase):
         result = breezedb.element_exists(10, field, table, database)
         self.assertEqual(False, result)
         
-    def test_get_element(self):
+    def test_get_element_content(self):
         # Get the data of element located in position 1
         expected = 'Paris'
-        result = breezedb.get_element(1, field, table, database)
+        result = breezedb.get_element_content(1, field, table, database)
         self.assertEqual(expected, result)
 
-    def test_get_element_inexistent(self):
+    def test_get_element_content_inexistent(self):
         # Attempt to get the data of an inexistent element
-        with self.assertRaises(breezedb.ElementException):
-            breezedb.get_element(10, field, table, database)
+        with self.assertRaises(breezedb.BreezeException):
+            breezedb.get_element_content(10, field, table, database)
 
     def test_find_element(self):
         # Find the index for 'Madrid'
@@ -52,7 +52,7 @@ class TestElement(unittest.TestCase):
 
     def test_modify_element_inexistent(self):
         # Modify the last element
-        with self.assertRaises(breezedb.ElementException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.modify_element(35, 'Test Name', field, table, database)
 
     def test_empty_element(self):
@@ -61,7 +61,7 @@ class TestElement(unittest.TestCase):
 
     def test_empty_element_inexistent(self):
         # Attempt to empty the content of an inexistent element
-        with self.assertRaises(breezedb.ElementException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.empty_element(10, field, table, database)
 
     def test_remove_row(self):
@@ -70,7 +70,7 @@ class TestElement(unittest.TestCase):
 
     def test_remove_row_inexistent(self):
         # Attemptto remove an inexistent row
-        with self.assertRaises(breezedb.ElementException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.remove_element_row(100, table, database)
 
 if __name__ == "__main__":

@@ -23,27 +23,21 @@
     :synopsis: Table related operations.
 
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
-
 """
 
 import xml.etree.ElementTree as XML
 import os, shutil
-
-class TableException(Exception):
-    """Class for exceptions in table module."""
-    def __init__(self, value):
-        print 'Table exception: ', value
+from breeze_exceptions import BreezeException
 
 def table_exists(table_name, database):
-    """Check whether a table exists in the database or not.
+    """ Check whether a table exists in the database or not.
     
-    :param table_name: name of the table to check
-    :type table_name: str
-    :param database: path to the database in which to check
-    :type database: str
+        :param table_name: name of the table to check
+        :type table_name: str
+        :param database: path to the database in which to check
+        :type database: str
 
-    :returns: True or False
-
+        :returns: True or False
     """
     breeze_file = os.path.join(database, 'root.breeze')
     breeze_tree = XML.parse(breeze_file)
@@ -74,25 +68,23 @@ def table_exists(table_name, database):
         return False
 
 def create_table(table_name, database):
-    """Create a new table in the database.
+    """ Create a new table in the database.
 
-    Adds a new <table> element to the root.breeze file and create the
-    corresponding table structure.
+        Adds a new <table> element to the root.breeze file and create the
+        corresponding table structure.
 
-    :param str table_name: name of the new table
-    :param str database: path to the database
+        :param str table_name: name of the new table
+        :param str database: path to the database
 
-    :raises TableException: database is not writable
-    :raises TableException: table already exists
-    :raises TableException: table cannot be created
-
+        :raises BreezeException: database is not writable,
+            table already exists, table cannot be created
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise TableException('cannot write to database')
+        raise BreezeException('table', 'cannot write to database')
 
     if table_exists(table_name, database):
-        raise TableException('table already exists in the database')
+        raise BreezeException('table', 'table already exists')
 
     try:
         newdir = os.path.join(database, table_name)
@@ -114,32 +106,32 @@ def create_table(table_name, database):
         breeze_tree.write(breeze_file)
 
     except OSError:
-        raise TableException('could not create base directory')
+        raise BreezeException('table', 'could not create base directory')
 
     except IOError:
-        raise TableException('error writing to file')
+        raise BreezeException('table', 'error writing to file')
 
 def rename_table(table_name, database, new_name):
-    """Rename a table from the database.
+    """ Rename a table from the database.
 
-    :param str table_name: current name of the table
-    :param str database: path to the database
-    :param str new_name: new name for the table
+        :param str table_name: current name of the table
+        :param str database: path to the database
+        :param str new_name: new name for the table
 
-    :raises TableException: database is not writable
-    :raises TableException: the specified table does not exist
-    :raises TableException: a table with new_name already exists
-
+        :raises BreezeException: database is not writable,
+            the specified table does not exist,
+            a table named `new_name` already exists
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise TableException('cannot write to database')
+        raise BreezeException('table', 'cannot write to database')
 
     if not table_exists(table_name, database):
-        raise TableException('table does not exist')
+        raise BreezeException('table', 'table does not exist')
 
     if table_exists(new_name, database):
-        raise TableException('the table %s already exists' % new_name)
+        raise BreezeException('table', 'table %s already exists'
+            % new_name)
 
     try:
         breeze_file = os.path.join(database, 'root.breeze')
@@ -158,30 +150,29 @@ def rename_table(table_name, database, new_name):
         os.rename(src, dst)
 
     except IOError:
-        raise TableException('could not rename table')
+        raise BreezeException('table', 'could not rename table')
 
     except OSError:
-        raise TableException('cold not rename directory')
+        raise BreezeException('table', 'cold not rename directory')
 
 def remove_table(table_name, database):
-    """Remove a table from the database.
+    """ Remove a table from the database.
 
-    Removes the corresponding directory and <table> element
-    from root.breeze file
+        Removes the corresponding directory and <table> element
+        from root.breeze file
 
-    :param str table_name: name of the table to remove
-    :param str database: path to the database
+        :param str table_name: name of the table to remove
+        :param str database: path to the database
 
-    :raises TableException: database is not writable
-    :raises TableException: table does not exist
-
+        :raises BreezeException: database is not writable,
+            table does not exist
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise TableException('cannot write to database')
+        raise BreezeException('table', 'cannot write to database')
 
     if not table_exists(table_name, database):
-        raise TableException('table does not exist')
+        raise BreezeException('table', 'table does not exist')
 
     try:
         breeze_file = os.path.join(database, 'root.breeze')
@@ -199,22 +190,22 @@ def remove_table(table_name, database):
         shutil.rmtree(table_dir)
 
     except OSError:
-        raise TableException('could not remove table directory')
+        raise BreezeException('table', 'could not remove table directory')
 
     except IOError:
-        raise TableException('error writing to file')
+        raise BreezeException('table', 'error writing to file')
 
 def get_field_list(table_name, database):
-    """Get a list of fields present in the table.
+    """ Get a list of fields present in the table.
 
-    :param str table_name: name of the table from which to get the fields
-    :param str database: path to the database
+        :param str table_name: name of the table from which to get
+            the fields
+        :param str database: path to the database
 
-    :raises TableException: table does not exist
-
+        :raises BreezeException: table does not exist
     """
     if not table_exists(table_name, database):
-        raise TableException('table does not exist')
+        raise BreezeException('table', 'table does not exist')
 
     fieldlist = []
 

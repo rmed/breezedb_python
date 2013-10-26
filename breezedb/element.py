@@ -23,32 +23,26 @@
     :synopsis: Element related operations.
 
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
-
 """
 
 import xml.etree.ElementTree as XML
 import os, string
-
-class ElementException(Exception):
-    """Class for exceptions in element module."""
-    def __init__(self, value):
-        print 'Element exception: ', value
+from breeze_exceptions import BreezeException
 
 def element_exists(element_index, field_name, table_name, database):
-    """Check whether an element exist in the field.
+    """ Check whether an element exist in the field.
 
-    :param int element_index: index of the element to check
-    :param str field_name: name of the field that contains the element
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param int element_index: index of the element to check
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :returns: True or false
+        :returns: True or false
 
-    :raises ElementException: supplied index is not a positive integer
-
+        :raises BreezeException: supplied index is not a positive integer
     """
     if element_index < 0:
-        raise ElementException('index needs to be a positive integer')
+        raise BreezeException('element', 'index needs to be a positive integer')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
@@ -61,23 +55,22 @@ def element_exists(element_index, field_name, table_name, database):
         return False
 
 def get_element_content(element_index, field_name, table_name, database):
-    """Get the data contained in an element.
+    """ Get the data contained in an element.
 
-    Returns the contained data as a string, so it must be parsed 
-    accordingly.
+        Returns the contained data as a string, so it must be parsed 
+        accordingly.
 
-    .. todo:: Parse the data automatically given a list of available types.
+        .. todo:: Parse the data automatically given a list of available types.
 
-    :param int element_index: index of the element
-    :param str field_name: name of the field that contains the element
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param int element_index: index of the element
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :returns str: content of the element
-
+        :returns str: content of the element
     """
     if not element_exists(element_index, field_name, table_name, database):
-        raise ElementException('the element does not exist')
+        raise BreezeException('element', 'the element does not exist')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
@@ -86,15 +79,14 @@ def get_element_content(element_index, field_name, table_name, database):
     return field_root.findall('element')[element_index].text
 
 def find_element(to_find, field_name, table_name, database):
-    """Find elements in the field.
+    """ Find elements in the field.
 
-    :param str to_find: data to find
-    :param str field_name: name of the field that contains the element
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param str to_find: data to find
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :returns: list of indexes that match the criteria
-
+        :returns: list of indexes that match the criteria
     """
     indexlist = []
 
@@ -110,19 +102,18 @@ def find_element(to_find, field_name, table_name, database):
 
 def modify_element(element_index, new_content, field_name,
                     table_name, database):
-    """Modify the content of an element.
+    """ Modify the content of an element.
 
-    :param int element_index: index of the element to modify
-    :param str new_content: new content to store in the element
-    :param str field_name: name of the field that contains the element
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param int element_index: index of the element to modify
+        :param str new_content: new content to store in the element
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :raises ElementException: element does not exist
-
+        :raises BreezeException: element does not exist
     """
     if not element_exists(element_index, field_name, table_name, database):
-        raise ElementException('the element does not exist')
+        raise BreezeException('element', 'the element does not exist')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
@@ -133,23 +124,21 @@ def modify_element(element_index, new_content, field_name,
     field_tree.write(field_file)
 
 def empty_element(element_index, field_name, table_name, database):
-    """Empty the content of an element.
+    """ Empty the content of an element.
 
-    The content is emptied instead of removing the whole element because
-    a single element cannot be removed, as the indexes of other fields
-    would not match.
+        The content is emptied instead of removing the whole element because
+        a single element cannot be removed, as the indexes of other fields
+        would not match.
 
-    :param int element_index: index of the element to empty
-    :param str field_name: name of the field that contains the element
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param int element_index: index of the element to empty
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :raises ElementException: element does not exist
-
+        :raises BreezeException: element does not exist
     """
-
     if not element_exists(element_index, field_name, table_name, database):
-        raise ElementException('the element does not exist')
+        raise BreezeException('element', 'the element does not exist')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
@@ -160,19 +149,18 @@ def empty_element(element_index, field_name, table_name, database):
     field_tree.write(field_file)
 
 def remove_element_row(element_index, table_name, database):
-    """Remove an element row from the specified table.
+    """ Remove an element row from the specified table.
 
-    Removes all the elements that correspond to that index and then
-    updates the rest of the indexes of the files.
+        Removes all the elements that correspond to that index and then
+        updates the rest of the indexes of the files.
 
-    :param int element_index: index of the element row to remove
-    :param str field_name: name of the field that contains the element
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param int element_index: index of the element row to remove
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :raises ElementException: element does not exist
-    :raises ElementException: element row cannot be removed
-
+        :raises BreezeException: element does not exist,
+            element row cannot be removed
     """
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
@@ -181,7 +169,7 @@ def remove_element_row(element_index, table_name, database):
     for field in table_root:
 
         if not element_exists(element_index, field.text, table_name, database):
-            raise ElementException('the element does not exist')
+            raise BreezeException('element', 'the element does not exist')
 
         try:
             field_file = os.path.join(database, table_name, field.text)
@@ -197,5 +185,5 @@ def remove_element_row(element_index, table_name, database):
             field_tree.write(field_file)
 
         except OSError:
-            raise ElementException('could not remove element')
+            raise BreezeException('element', 'could not remove element')
 

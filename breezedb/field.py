@@ -23,26 +23,20 @@
     :synopsis: Field related operations.
 
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
-
 """
 
 import xml.etree.ElementTree as XML
 import os
-
-class FieldException(Exception):
-    """Class for exceptions in field module."""
-    def __init__(self, value):
-        print 'Field exception: ', value
+from breeze_exceptions import BreezeException
 
 def field_exists(field_name, table_name, database):
-    """Check whether a field exists in the table or not.
+    """ Check whether a field exists in the table or not.
 
-    :param str field_name: name of the field to check
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param str field_name: name of the field to check
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :returns: True or False
-
+        :returns: True or False
     """    
     table_file = os.path.join(database, table_name, 'tableinfo.breeze')
     table_tree = XML.parse(table_file)
@@ -64,19 +58,18 @@ def field_exists(field_name, table_name, database):
         return False
 
 def get_field_type(field_name, table_name, database):
-    """Get the data type of a field from the <type> tag.
+    """ Get the data type of a field from the <type> tag.
 
-    :param str field_name: name of the field to get the type from
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param str field_name: name of the field to get the type from
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :returns str: type of the field
+        :returns str: type of the field
 
-    :raises FieldException: field does not exist
-
+        :raises BreezeException: field does not exist
     """
     if not field_exists(field_name, table_name, database):
-        raise FieldException('field does not exist')
+        raise BreezeException('field', 'field does not exist')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
@@ -85,26 +78,25 @@ def get_field_type(field_name, table_name, database):
     return field_root.find('type').text
 
 def create_field(field_name, field_type, table_name, database):
-    """Create a new field in the table.
+    """ Create a new field in the table.
 
-    Add a new <field> element to the tableinfo.breeze file and create the
-    corresponding field structure.
+        Add a new <field> element to the tableinfo.breeze file and create the
+        corresponding field structure.
 
-    :param str field_name: name for the new field
-    :param str field_type: type of the new field
-    :param str table_name: name of the table that will contain the field
-    :param str database: path to the database
+        :param str field_name: name for the new field
+        :param str field_type: type of the new field
+        :param str table_name: name of the table that will contain the field
+        :param str database: path to the database
 
-    :raises FieldException: database is not writable
-    :raises FieldException: a field `field_name` already exists
-
+        :raises BreezeException: database is not writable,
+            a field `field_name` already exists
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise FieldException('cannot write to database')
+        raise BreezeException('field', 'cannot write to database')
 
     if field_exists(field_name, table_name, database):
-        raise FieldException('field already exists in the table')
+        raise BreezeException('field', 'field already exists in the table')
 
     try:
         field_file = os.path.join(database, table_name, field_name)
@@ -130,30 +122,29 @@ def create_field(field_name, field_type, table_name, database):
         table_tree.write(table_file)
 
     except IOError:
-        raise FieldException('error writing to file')
+        raise BreezeException('field', 'error writing to file')
 
 def rename_field(field_name, table_name, database, new_name):
-    """Rename a field.
+    """ Rename a field.
 
-    :param str field_name: current name of the field
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
-    :param str new_name: new name for the field
+        :param str field_name: current name of the field
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
+        :param str new_name: new name for the field
 
-    :raises FieldException: database is not writable
-    :raises FieldException: the field to rename does not exist
-    :raises FieldException: a field `new_name` already exists
-
+        :raises BreezeException: database is not writable,
+            the field to rename does not exist,
+            a field `new_name` already exists
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise FieldException('cannot write to database')
+        raise BreezeException('field', 'cannot write to database')
 
     if not field_exists(field_name, table_name, database):
-        raise FieldException('field does not exist in the table')
+        raise BreezeException('field', 'field does not exist in the table')
 
     if field_exists(new_name, table_name, database):
-        raise FieldException('the field %s already exists', new_name)
+        raise BreezeException('field', 'the field %s already exists', new_name)
 
     try:
         table_file = os.path.join(database, table_name, 'tableinfo.breeze')
@@ -172,31 +163,30 @@ def rename_field(field_name, table_name, database, new_name):
         os.rename(src, dst)
 
     except IOError:
-        raise FieldException('could not rename the field')
+        raise BreezeException('field', 'could not rename the field')
 
     except OSError:
-        raise FieldException('could not rename the file')
+        raise BreezeException('field', 'could not rename the file')
 
 def remove_field(field_name, table_name, database):
-    """Remove a field from the table.
+    """ Remove a field from the table.
 
-    Remove the corresponding file and <field> element
-    from the tableinfo.breeze file
+        Remove the corresponding file and <field> element
+        from the tableinfo.breeze file
 
-    :param str field_name: name of the field to remove
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
-    
-    :raises FieldException: database is not writable
-    :raises FieldException: field does not exist
-
+        :param str field_name: name of the field to remove
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
+        
+        :raises BreezeException: database is not writable,
+            field does not exist
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise FieldException('cannot write to database')
+        raise BreezeException('field', 'cannot write to database')
 
     if not field_exists(field_name, table_name, database):
-        raise FieldException('field does not exist in the table')
+        raise BreezeException('field', 'field does not exist in the table')
 
     try:
         table_file = os.path.join(database, table_name, 'tableinfo.breeze')
@@ -214,28 +204,27 @@ def remove_field(field_name, table_name, database):
         os.remove(field_file)
 
     except OSError:
-        raise FieldException('could not remove file')
+        raise BreezeException('field', 'could not remove file')
 
 def empty_field(field_name, table_name, database):
-    """Empty the contents of a field.
+    """ Empty the contents of a field.
 
-    Remove the all the <element> tags from the file but
-    preserve the <type> tab.
+        Remove the all the <element> tags from the file but
+        preserve the <type> tab.
 
-    :param str field_name: name of the field to empty
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param str field_name: name of the field to empty
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :raises FieldException: database is not writable
-    :raises FieldException: field does not exist
-
+        :raises BreezeException: database is not writable,
+            field does not exist
     """
     can_write = os.access(database, os.W_OK)
     if not can_write:
-        raise FieldException('cannot write to database')
+        raise BreezeException('field', 'cannot write to database')
 
     if not field_exists(field_name, table_name, database):
-        raise FieldException('field does not exist in the table')
+        raise BreezeException('field', 'field does not exist in the table')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)
@@ -247,21 +236,20 @@ def empty_field(field_name, table_name, database):
     field_tree.write(field_file)
 
 def get_element_list(field_name, table_name, database):
-    """Get a list of elements contained in the field.
+    """ Get a list of elements contained in the field.
 
-    :param str field_name: name of the field to get the elements from
-    :param str table_name: name of the table that contains the field
-    :param str database: path to the database
+        :param str field_name: name of the field to get the elements from
+        :param str table_name: name of the table that contains the field
+        :param str database: path to the database
 
-    :returns: list of elements
+        :returns: list of elements
 
-    :raises FieldException: field does not exist
-
+        :raises BreezeException: field does not exist
     """
     elemlist = []
 
     if not field_exists(field_name, table_name, database):
-        raise FieldException('field does not exist in the table')
+        raise BreezeException('field', 'field does not exist in the table')
 
     field_file = os.path.join(database, table_name, field_name)
     field_tree = XML.parse(field_file)

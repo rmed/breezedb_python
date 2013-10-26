@@ -28,7 +28,7 @@ class TestField(unittest.TestCase):
 
     def test_get_fieldtype_inexistent(self):
         # Attemp to get the field type of an inexistent field
-        with self.assertRaises(breezedb.FieldException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.get_field_type('test', table, database)
 
     def test_create_field(self):
@@ -37,7 +37,7 @@ class TestField(unittest.TestCase):
 
     def test_create_field_existing(self):
         # Attempt to add an already existing field
-        with self.assertRaises(breezedb.FieldException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.create_field('new_field', 'string', table, database) 
 
     def test_remove_field(self):
@@ -46,7 +46,7 @@ class TestField(unittest.TestCase):
 
     def test_remove_field_inexistent(self):
         # Attempt to remove the field again
-        with self.assertRaises(breezedb.FieldException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.remove_field('new_field', table, database)
 
     def test_empty_field(self):
@@ -55,20 +55,20 @@ class TestField(unittest.TestCase):
 
     def test_empty_field_inexistent(self):
         # Attempt to empty the contents of an inexistent field
-        with self.assertRaises(breezedb.FieldException):
+        with self.assertRaises(breezedb.BreezeException):
             breezedb.empty_field('none', table, database)
 
     def test_get_element_list(self):
         # Get an element list from the 'last_name' field
         expected = ['McPerson1', 'McPerson2', 'McPerson3', 'McPerson4',
                     'McPerson5']
-        result = breezedb.get_elementlist('last_name', table, database)
+        result = breezedb.get_element_list('last_name', table, database)
         self.assertEqual(expected, result)
 
     def test_get_element_list_inexistent(self):
         # Attempt to get an element list from an inexistent field
-        with self.assertRaises(breezedb.FieldException):
-            breezedb.get_elementlist('test_field', table, database)
+        with self.assertRaises(breezedb.BreezeException):
+            breezedb.get_element_list('test_field', table, database)
 
 if __name__ == "__main__":
     # Remove previous temp copy

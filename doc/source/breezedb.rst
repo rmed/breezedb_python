@@ -36,3 +36,11 @@ breezedb Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`breeze_exceptions` Module
+-------------------------------
+
+.. automodule:: breeze_exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

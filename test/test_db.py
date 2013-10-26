@@ -15,7 +15,7 @@ class TestDBOperations(unittest.TestCase):
 
     def test_create_breezedb_existing(self):
         # Try to create the database again
-        with self.assertRaises(breezedb.DBException):
+        with self.assertRaises(breezedb.BreezeException):
             path = './'
             name = 'test_database1'
             breezedb.create_db(path, name)
@@ -30,7 +30,7 @@ class TestDBOperations(unittest.TestCase):
 
     def test_remove_breezedb_inexistent(self):
         # Try to remove the databases again
-        with self.assertRaises(breezedb.DBException):
+        with self.assertRaises(breezedb.BreezeException):
             path = 'test_database1'
             breezedb.remove_db(path)
             temp = 'db_temp'
