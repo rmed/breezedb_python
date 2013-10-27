@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# This file is part of BreezeDB - https://github.com/RMed/breeze_db_python
+#
+# This file is part of BreezeDB - https://github.com/RMed/breezedb_python
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
@@ -16,14 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""breezedb.core
-
-This is the module that needs to be imported in order to use BreezeDB.
-This provides all the available operations and can be used in such a way:
-
-    import breezedb.core as breeze
-
-"""
-
-from operations import db, element, field, table
-
+from db import *
+from table import *
+from field import *
+from element import *
+from breeze_exceptions import *

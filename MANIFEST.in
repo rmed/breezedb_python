@@ -1,0 +1,9 @@
+include setup.py
+include AUTHORS
+include COPYING
+include COPYING.LESSER
+include doc/Makefile
+include doc/make.bat
+recursive-include doc/source *
+recursive-include breezedb *.py
+recursive-include test *.py
