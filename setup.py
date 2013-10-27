@@ -21,8 +21,8 @@ from distutils.core import setup
 
 setup(
     name = 'BreezeDB',
-    version = 'dev',
-    description = 'File-based database',
+    version = '1.0.0',
+    description = 'A file-based database',
     author = 'Rafael Medina García (RMed)',
     author_email = 'rafamedgar@gmail.com',
     url = 'https://github.com/RMed/breezedb_python',
@@ -31,7 +31,7 @@ setup(
     package_dir = {'breezedb': 'breezedb'},
 
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
