@@ -1,9 +1,6 @@
 breezedb Package
 ================
 
-:mod:`breezedb` Package
------------------------
-
 :mod:`db` Module
 ----------------
 
