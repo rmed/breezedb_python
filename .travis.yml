@@ -1,0 +1,14 @@
+language: python
+python:
+    - "2.7"
+branches:
+    only:
+        - dev
+install:
+    - "python setup.py install"
+
+script:
+    - "python test/test_db.py"
+    - "python test/test_table.py"
+    - "python test/test_field.py"
+    - "python test/test_element.py"
