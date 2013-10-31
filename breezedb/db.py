@@ -27,7 +27,7 @@
 
 import xml.etree.ElementTree as XML
 import os, shutil
-from breeze_exceptions import BreezeException
+from breezedb.breeze_exceptions import BreezeException
 
 def get_table_list(database):
     """ Get a list of tables present in the database's root.breeze file.

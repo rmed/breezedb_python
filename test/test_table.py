@@ -1,11 +1,11 @@
 import unittest
 import os, sys, shutil
 
-sys.path[0:0] = [os.path.join(os.path.dirname(__file__), ".."),]
+test_root = os.path.abspath(os.path.dirname(__file__))
 
 import breezedb
 
-database = 'db_temp'
+database = os.path.join(test_root, 'db_temp')
 
 class TestTable(unittest.TestCase):
 
@@ -40,10 +40,11 @@ class TestTable(unittest.TestCase):
 
 if __name__ == "__main__":
     # Remove previous temp copy
-    if os.path.isdir('db_temp'):
-        shutil.rmtree('db_temp')
+    if os.path.isdir(os.path.join(test_root, 'db_temp')):
+        shutil.rmtree(os.path.join(test_root, 'db_temp'))
     # Create temp copy of the database
-    shutil.copytree('db', 'db_temp')
+    shutil.copytree(os.path.join(test_root, 'db'),
+        os.path.join(test_root, 'db_temp'))
     # Begin tests
     unittest.main()
 

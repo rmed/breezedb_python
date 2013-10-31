@@ -26,8 +26,9 @@
 """
 
 import xml.etree.ElementTree as XML
-import os, string, field
-from breeze_exceptions import BreezeException
+import os, string
+import breezedb.field as field
+from breezedb.breeze_exceptions import BreezeException
 
 def element_exists(element_index, field_name, table_name, database):
     """ Check whether an element exist in the field.
