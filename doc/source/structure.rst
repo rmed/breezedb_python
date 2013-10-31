@@ -10,7 +10,7 @@ BreezeDB makes use of **files and directories** in order to create a database, o
 - **Tables**: Subdirectories of the root of the database that contain differet fields and a special file that specifies the order of those fields.
 - **Fields**: Files *without* extension whose contents are organized using *XML* structure. The type of the data that a field contains is specified at the beginning of the file.
 
-There are also two **special files** located in the root of the databes and in each table, respectively:
+There are also two **special files** located in the root of the database and in each table, respectively:
 
 - root.breeze_: This file sets the root of the database and contains all the different tables.
 - tableinfo.breeze_: This file specifies the fields that are contained in a table.
@@ -96,13 +96,13 @@ Data types
 
 Virtually, Breeze stores the data in a text file, but there is no real limitation regarding what can be stored in the database, as long as the specific programming language can treat the data accordingly. In order to have a better portability of the code, we can specify the following simple data types:
 
-- *String*: For storing any kind of text, including single characters.
+- *string*: For storing any kind of text, including single characters.
 
-- *Int*: For storing integer numbers.
+- *int*: For storing integer numbers.
 
-- *Double/Float*: For storing real numbers.
+- *double/float*: For storing real numbers (with double precision).
 
-- *Boolean*: For storing true/false statements. The boolean type is **treated as a single bit** (int) for a simpler approach. Therefore::
+- *boolean*: For storing true/false statements. The boolean type is **treated as a single bit** (int) for a simpler approach. Therefore::
 
     0 => false
     1 => true

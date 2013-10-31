@@ -26,7 +26,7 @@
 """
 
 import xml.etree.ElementTree as XML
-import os, string
+import os, string, field
 from breeze_exceptions import BreezeException
 
 def element_exists(element_index, field_name, table_name, database):
@@ -54,18 +54,39 @@ def element_exists(element_index, field_name, table_name, database):
     else:
         return False
 
-def get_element_content(element_index, field_name, table_name, database):
+def parse_element_content(field_type, content):
+    """ Parse the content of the element depending on the type.
+
+        :param str field_type: type of the field that contains the element
+        :param str content: content to parse
+
+        :returns: parsed content according to the type (String, Int,
+            Boolean, etc)
+    """
+    if field_type == 'string':
+        return str(content)
+    elif field_type == 'int':
+        return int(content)
+    elif field_type == 'float' or field_type == 'double':
+        # Python's float type has double precision
+        return float(content)
+    elif field_type == 'boolean':
+        # boolean type is represented by a 0 (false) or a 1 (true)
+        if content == '0':
+            return False
+        else:
+            return True
+
+def get_element_content(element_index, field_name, table_name, database,
+    parse = True):
     """ Get the data contained in an element.
-
-        Returns the contained data as a string, so it must be parsed 
-        accordingly.
-
-        .. todo:: Parse the data automatically given a list of available types.
 
         :param int element_index: index of the element
         :param str field_name: name of the field that contains the element
         :param str table_name: name of the table that contains the field
         :param str database: path to the database
+        :param Boolean parse: whether to parse the content according to
+            the type of the field or not
 
         :returns str: content of the element
     """
@@ -76,15 +97,23 @@ def get_element_content(element_index, field_name, table_name, database):
     field_tree = XML.parse(field_file)
     field_root = field_tree.getroot()
 
+    if parse:
+        field_type = field.get_field_type(field_name, table_name, database)
+        content = field_root.findall('element')[element_index].text
+        return parse_element_content(field_type, content)     
+
     return field_root.findall('element')[element_index].text
 
-def find_element(to_find, field_name, table_name, database):
+def find_element(to_find, field_name, table_name, database,
+        ignore_case = True):
     """ Find elements in the field.
 
         :param str to_find: data to find
         :param str field_name: name of the field that contains the element
         :param str table_name: name of the table that contains the field
         :param str database: path to the database
+        :param Boolean ignore_case: whether or not to ignore the case
+            when searching
 
         :returns: list of indexes that match the criteria
     """
@@ -95,8 +124,12 @@ def find_element(to_find, field_name, table_name, database):
     field_root = field_tree.getroot()
 
     for element in field_root.iter('element'):
-        if string.lower(str(to_find)) in string.lower(str(element.text)):
-            indexlist.append(element.get('index'))
+        if ignore_case:
+            if string.lower(str(to_find)) in string.lower(str(element.text)):
+                indexlist.append(element.get('index'))
+        else:
+            if str(to_find) in str(element.text):
+                indexlist.append(element.get('index'))
 
     return indexlist
 
