@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of BreezeDB - https://github.com/RMed/breezedb_python
+# This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of BreezeDB - https://github.com/RMed/breezedb_python
+# This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
@@ -20,9 +20,9 @@
 from distutils.core import setup
 
 setup(
-    name = 'BreezeDB',
+    name = 'breezedb',
     version = 'dev',
-    description = 'File-based database',
+    description = 'A simple file-based database system',
     author = 'Rafael Medina García (RMed)',
     author_email = 'rafamedgar@gmail.com',
     url = 'https://github.com/RMed/breezedb_python',
@@ -37,6 +37,7 @@ setup(
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
         'Topic :: Database :: Database Engines/Servers',
         'Topic :: Software Development :: Libraries :: Python Modules'
         ]
