@@ -1,11 +1,9 @@
 breezedb
 ========
 
-[![Build Status](https://travis-ci.org/RMed/breezedb_python.png)](https://travis-ci.org/RMed/breezedb_python)
-
 A simple file-based database engine.
 
-**This repository contains the *Python* implementation of BreezeDB. For the pseudocode and more information on the project, please [visit the central repository](http://github.com/RMed/breeze_db/).**
+**This repository contains the *Python* implementation of breezedb. For the pseudocode and more information on the project, please [visit the central repository](http://github.com/RMed/breeze_db/).**
 
 This code is written for **Python 2.7**
 
