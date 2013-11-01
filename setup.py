@@ -20,10 +20,17 @@
 from distutils.core import setup
 
 setup(
+<<<<<<< HEAD
     name = 'breezedb',
     version = '1.0.1',
     description = 'A simple file-based database engine',
     author = 'Rafael Medina García',
+=======
+    name = 'BreezeDB',
+    version = '1.0.0',
+    description = 'A file-based database',
+    author = 'Rafael Medina García (RMed)',
+>>>>>>> master
     author_email = 'rafamedgar@gmail.com',
     url = 'https://github.com/RMed/breezedb_python',
     license = 'LGPLv3',
