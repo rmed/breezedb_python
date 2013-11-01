@@ -1,9 +1,9 @@
-.. BreezeDB documentation master file, created by
+.. breezedb documentation master file, created by
    sphinx-quickstart on Tue Oct 22 10:17:02 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to BreezeDB's documentation!
+Welcome to breezedb's documentation!
 ====================================
 
 Contents:

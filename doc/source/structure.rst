@@ -5,7 +5,7 @@ Database Structure
 Overview
 ********
 
-BreezeDB makes use of **files and directories** in order to create a database, organizing the data in tables and fields:
+breezedb makes use of **files and directories** in order to create a database, organizing the data in tables and fields:
 
 - **Tables**: Subdirectories of the root of the database that contain differet fields and a special file that specifies the order of those fields.
 - **Fields**: Files *without* extension whose contents are organized using *XML* structure. The type of the data that a field contains is specified at the beginning of the file.
