@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-.. module:: exceptions
+.. module:: breeze_exceptions
     :platform: Unix, Windows
     :synopsis: BreezeDB exception handler.
 
@@ -33,17 +33,11 @@ class BreezeException(Exception):
 
         :arg str level: library level in which the exception occured 
              (db, table, field or element)
-        :arg str message: information message to print
+        :arg str msg: exception information
     """
 
-    def __init__(self, level, message):
+    def __init__(self, level, msg):
         self.level = level
-        self.message = message
-        self.exception_message()
+        self.msg = msg
 
-    def exception_message(self):
-        """ This function simply writes a message into the stderr indicating
-            why (and where) the exception was produced.
-        """
-        sys.stderr.write('Exception in %s: %s' % (self.level, self.message))
 
