@@ -59,6 +59,9 @@ def element_exists(element_index, field_name, table_name, database):
 def create_element_row(element_list, table_name, database):
     """ Creates a row of elements in the given table.
 
+        Loops through the list of fields in the table and adds the
+        corresponding element.
+
         :param element_list: list of elements to add to the table. Elements
             must appear in the order the fields are listed in the table, and
             there must be one element per field in the list, even if they are
@@ -78,13 +81,23 @@ def create_element_row(element_list, table_name, database):
     if len(element_list) != len(field_list):
         raise BreezeException('element', 'number of elements is not equal to the number of fields')
 
-    for index, f in enumerate(field_list):
+    field_tree = XML.parse(os.path.join(database, table_name, field_list[0]))
+    field_root = field_tree.getroot()
+
+    last_index = field_root[-1].get('index')
+    if last_index != None:
+        index = int(last_index) + 1
+    else:
+        index = 0
+
+    for it, f in enumerate(field_list):
         field_file = os.path.join(database, table_name, f)
         field_tree = XML.parse(field_file)
         field_root = field_tree.getroot()
 
         new_element = XML.Element('element')
-        new_element.text = str(element_list[index])
+        new_element.set('index', str(index))
+        new_element.text = str(element_list[it])
         field_root.append(new_element)
 
         field_tree.write(field_file)
