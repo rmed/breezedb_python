@@ -29,6 +29,9 @@ import xml.etree.ElementTree as XML
 import os
 from breezedb.breeze_exceptions import BreezeException
 
+# Types recognized by breezedb
+TYPES = ['string', 'int', 'double', 'float', 'boolean']
+
 def field_exists(field_name, table_name, database):
     """ Check whether a field exists in the table or not.
 

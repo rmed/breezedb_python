@@ -28,6 +28,7 @@
 import xml.etree.ElementTree as XML
 import os, string
 import breezedb.field as field
+import breezedb.table as table
 from breezedb.breeze_exceptions import BreezeException
 
 def element_exists(element_index, field_name, table_name, database):
@@ -54,6 +55,39 @@ def element_exists(element_index, field_name, table_name, database):
         return True
     else:
         return False
+
+def create_element_row(element_list, table_name, database):
+    """ Creates a row of elements in the given table.
+
+        :param element_list: list of elements to add to the table. Elements
+            must appear in the order the fields are listed in the table, and
+            there must be one element per field in the list, even if they are
+            left blank
+        :param str table_name: name of the table that will contain the row
+        :param str database: path to the database
+
+        :raises BreezeException: cannot write to database
+        :raises BreezeException: not enough elements
+        :raises BreezeException: too many elements
+    """
+    can_write = os.access(database, os.W_OK)
+    if not can_write:
+        raise BreezeException('element', 'cannot write to database')
+
+    field_list = table.get_field_list(table_name, database)
+    if len(element_list) != len(field_list):
+        raise BreezeException('element', 'number of elements is not equal to the number of fields')
+
+    for index, f in enumerate(field_list):
+        field_file = os.path.join(database, table_name, f)
+        field_tree = XML.parse(field_file)
+        field_root = field_tree.getroot()
+
+        new_element = XML.Element('element')
+        new_element.text = str(element_list[index])
+        field_root.append(new_element)
+
+        field_tree.write(field_file)
 
 def parse_element_content(field_type, content):
     """ Parse the content of the element depending on the type.
