@@ -181,15 +181,15 @@ def find_element(to_find, field_name, table_name, database,
 
     return indexlist
 
-def modify_element(element_index, new_content, field_name,
-                    table_name, database):
+def modify_element(element_index, field_name,
+                    table_name, database, new_content):
     """ Modify the content of an element.
 
         :param int element_index: index of the element to modify
-        :param str new_content: new content to store in the element
         :param str field_name: name of the field that contains the element
         :param str table_name: name of the table that contains the field
         :param str database: path to the database
+        :param str new_content: new content to store in the element
 
         :raises BreezeException: element does not exist
     """

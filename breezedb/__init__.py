@@ -21,5 +21,6 @@ from breezedb.db import *
 from breezedb.table import *
 from breezedb.field import *
 from breezedb.element import *
+from breezedb.query import run_query
 from breezedb.breeze_exceptions import *
 from breezedb._version import __version__
