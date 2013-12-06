@@ -68,7 +68,7 @@ class Parser():
         re_create_db = re.compile("CREATE DB \'(.*?)\' AT \'(.*?)\'")
         re_create_table = re.compile("CREATE TABLE (.*) AT \'(.*?)\'")
         re_create_field = re.compile("CREATE FIELD (.*) IN \'(.*?)\' AT \'(.*?)\'")
-        re_create_elements = re.compile("CREATE ELEMENTS (.*) IN \'(.*?)\' AT \'(.*?)\'")
+        re_create_row = re.compile("CREATE ROW (.*) IN \'(.*?)\' AT \'(.*?)\'")
         re_arg = re.compile("\'(.*?)\'")
 
         if re_create_db.match(self.query):
@@ -99,11 +99,11 @@ class Parser():
                             table_name, db_path)
                     it += 2
 
-        elif re_create_elements.match(self.query):
-            # CREATE ELEMENTS 'element', 'element',... IN 'table' AT 'db'
-            element_args = re_create_elements.match(self.query).group(1)
-            table_name = re_create_elements.match(self.query).group(2)
-            db_path = re_create_elements.match(self.query).group(3)
+        elif re_create_row.match(self.query):
+            # CREATE ROW 'element' 'element' ... IN 'table' AT 'db'
+            element_args = re_create_row.match(self.query).group(1)
+            table_name = re_create_row.match(self.query).group(2)
+            db_path = re_create_row.match(self.query).group(3)
             elementlist = re_arg.findall(element_args)
 
             breezedb.create_element_row(elementlist, table_name, db_path)
@@ -128,7 +128,7 @@ class Parser():
 
         if re_get_tables.match(self.query):
             # GET TABLES AT 'db'
-            db_path = re_get.tables.match(self.query).group(1)
+            db_path = re_get_tables.match(self.query).group(1)
 
             return breezedb.get_table_list(db_path)
 
@@ -157,7 +157,7 @@ class Parser():
 
         elif re_get_row.match(self.query):
             # GET ROW 'index' IN 'table' AT 'db'
-            index = re_get_row.match(self.query).group(1)
+            index = int(re_get_row.match(self.query).group(1))
             table_name = re_get_row.match(self.query).group(2)
             db_path = re_get_row.match(self.query).group(3)
 
@@ -165,7 +165,7 @@ class Parser():
 
         elif re_get_element.match(self.query):
             # GET ELEMENT 'index' FROM 'field' IN 'table' AT 'db'
-            index = re_get_element.match(self.query).group(1)
+            index = int(re_get_element.match(self.query).group(1))
             field_name = re_get_element.match(self.query).group(2)
             table_name = re_get_element.match(self.query).group(3)
             db_path = re_get_element.match(self.query).group(4)
@@ -210,7 +210,7 @@ class Parser():
 
         elif re_remove_row.match(self.query):
             # REMOVE ROW 'index' IN 'table' AT 'db'
-            index = re_remove_row.match(self.query).group(1)
+            index = int(re_remove_row.match(self.query).group(1))
             table_name = re_remove_row.match(self.query).group(2)
             db_path = re_remove_row.match(self.query).group(3)
 
@@ -277,7 +277,7 @@ class Parser():
 
         if re_exists_element.match(self.query):
             # EXISTS ELEMENT 'index' FROM 'field' IN 'table' AT 'db'
-            index = re_exists_element.match(self.query).group(1)
+            index = int(re_exists_element.match(self.query).group(1))
             field_name = re_exists_element.match(self.query).group(2)
             table_name = re_exists_element.match(self.query).group(3)
             db_path = re_exists_element.match(self.query).group(4)
@@ -307,7 +307,7 @@ class Parser():
 
         elif re_empty_element.match(self.query):
             # EMPTY ELEMENT 'index' FROM 'field' IN 'table' AT 'db'
-            index = re_empty_element.match(self.query).group(1)
+            index = int(re_empty_element.match(self.query).group(1))
             field_name = re_empty_element.match(self.query).group(2)
             table_name = re_empty_element.match(self.query).group(3)
             db_path = re_empty_element.match(self.query).group(4)
@@ -347,7 +347,7 @@ class Parser():
 
         if re_modify.match(self.query):
             # MODIFY 'index' FROM 'field' IN 'table' AT 'db' TO 'new content'
-            index = re_modify.match(self.query).group(1)
+            index = int(re_modify.match(self.query).group(1))
             field_name = re_modify.match(self.query).group(2)
             table_name = re_modify.match(self.query).group(3)
             db_path = re_modify.match(self.query).group(4)
