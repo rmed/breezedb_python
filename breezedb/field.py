@@ -234,7 +234,7 @@ def empty_field(field_name, table_name, database):
     field_root = field_tree.getroot()
 
     for element in field_root.iter('element'):
-        field_root.remove(element)
+        element.text = ""
 
     field_tree.write(field_file)
 
