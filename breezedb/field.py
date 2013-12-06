@@ -84,7 +84,8 @@ def create_field(field_name, field_type, table_name, database):
     """ Create a new field in the table.
 
         Add a new <field> element to the tableinfo.breeze file and create the
-        corresponding field structure.
+        corresponding field structure. Check for existing fields and the
+        number of empty elements the new field must have.
 
         :param str field_name: name for the new field
         :param str field_type: type of the new field
@@ -102,6 +103,20 @@ def create_field(field_name, field_type, table_name, database):
         raise BreezeException('field', 'field already exists in the table')
 
     try:
+        table_file = os.path.join(database, table_name, 'tableinfo.breeze')
+        table_tree = XML.parse(table_file)
+        table_root = table_tree.getroot()
+
+        # Find the last index in the table to create empty elements
+        last_index = -1
+        field_list = table_root.findall('field')
+        if field_list:
+            ex_field_file = os.path.join(database, table_name,
+                    field_list[0].text)
+            ex_field_tree = XML.parse(ex_field_file)
+            ex_field_root = ex_field_tree.getroot()
+            last_index = int(ex_field_root[-1].get('index'))
+
         field_file = os.path.join(database, table_name, field_name)
 
         breeze_tag = XML.Element('breeze')
@@ -110,13 +125,16 @@ def create_field(field_name, field_type, table_name, database):
 
         new_type = XML.Element('type')
         new_type.text = field_type
-
         field_root.append(new_type)
-        field_tree.write(field_file)
 
-        table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-        table_tree = XML.parse(table_file)
-        table_root = table_tree.getroot()
+        # Create elements if needed
+        if last_index > -1:
+            for it in xrange(0, last_index + 1):
+                new_element = XML.Element('element')
+                new_element.set('index', str(it))
+                field_root.append(new_element)
+
+        field_tree.write(field_file)
 
         new_field = XML.Element('field')
         new_field.text = field_name
