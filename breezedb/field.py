@@ -115,7 +115,9 @@ def create_field(field_name, field_type, table_name, database):
                     field_list[0].text)
             ex_field_tree = XML.parse(ex_field_file)
             ex_field_root = ex_field_tree.getroot()
-            last_index = int(ex_field_root[-1].get('index'))
+            ex_elements = ex_field_root.findall('element')
+            if ex_elements:
+                last_index = int(ex_field_root[-1].get('index'))
 
         field_file = os.path.join(database, table_name, field_name)
 

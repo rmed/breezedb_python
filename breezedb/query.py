@@ -28,6 +28,9 @@
 import breezedb, re
 from breezedb.breeze_exceptions import BreezeException
 
+# Regular expression for arguments
+RE_ARG = re.compile("\'(.*?)\'")
+
 class Parser():
     """ Parses the query and divides it into subqueries where possible.
 
@@ -69,7 +72,6 @@ class Parser():
         re_create_table = re.compile("CREATE TABLE (.*) AT \'(.*?)\'")
         re_create_field = re.compile("CREATE FIELD (.*) IN \'(.*?)\' AT \'(.*?)\'")
         re_create_row = re.compile("CREATE ROW (.*) IN \'(.*?)\' AT \'(.*?)\'")
-        re_arg = re.compile("\'(.*?)\'")
 
         if re_create_db.match(self.query):
             # CREATE DB 'name' AT 'path'
@@ -81,21 +83,21 @@ class Parser():
             # CREATE TABLE 'table1' 'table2' ...  AT 'db'
             table_args = re_create_table.match(self.query).group(1)
             db_path = re_create_table.match(self.query).group(2)
-            tablelist = re_arg.findall(table_args)
+            table_list = RE_ARG.findall(table_args)
 
-            for table in tablelist:
+            for table in table_list:
                 breezedb.create_table(table, db_path)
 
         elif re_create_field.match(self.query):
-            # CREATE FIELD 'name' 'type' 'name' 'type' ... IN 'table' AT 'db'
+            # CREATE FIELD 'name1' 'type1' 'name2' 'type2' ... IN 'table' AT 'db'
             field_args = re_create_field.match(self.query).group(1)
             table_name = re_create_field.match(self.query).group(2)
             db_path = re_create_field.match(self.query).group(3)
-            fieldlist = re_arg.findall(field_args)
+            field_list = RE_ARG.findall(field_args)
 
             it = 0
-            while it < len(fieldlist):
-                    breezedb.create_field(fieldlist[it], fieldlist[it+1],
+            while it < len(field_list):
+                    breezedb.create_field(field_list[it], field_list[it+1],
                             table_name, db_path)
                     it += 2
 
@@ -104,9 +106,9 @@ class Parser():
             element_args = re_create_row.match(self.query).group(1)
             table_name = re_create_row.match(self.query).group(2)
             db_path = re_create_row.match(self.query).group(3)
-            elementlist = re_arg.findall(element_args)
+            element_list = RE_ARG.findall(element_args)
 
-            breezedb.create_element_row(elementlist, table_name, db_path)
+            breezedb.create_element_row(element_list, table_name, db_path)
 
         else:
             raise BreezeException('query', 'invalid query: %s' % self.query)
@@ -183,9 +185,9 @@ class Parser():
             :raises BreezeException: incorrect query syntax 
         """
         re_remove_db = re.compile("REMOVE DB AT \'(.*?)\'")
-        re_remove_table = re.compile("REMOVE TABLE \'(.*?)\' AT \'(.*?)\'")
-        re_remove_field = re.compile("REMOVE FIELD \'(.*?)\' IN \'(.*?)\' AT \'(.*?)\'")
-        re_remove_row = re.compile("REMOVE ROW \'(\d)\' IN \'(.*?)\' AT \'(.*?)\'")
+        re_remove_table = re.compile("REMOVE TABLE (.*) AT \'(.*?)\'")
+        re_remove_field = re.compile("REMOVE FIELD (.*) IN \'(.*?)\' AT \'(.*?)\'")
+        re_remove_row = re.compile("REMOVE ROW (.*) IN \'(.*?)\' AT \'(.*?)\'")
 
         if re_remove_db.match(self.query):
             # REMOVE DB AT 'path'
@@ -194,27 +196,33 @@ class Parser():
             breezedb.remove_db(db_path)
 
         elif re_remove_table.match(self.query):
-            # REMOVE TABLE 'name' AT 'db'
-            table_name = re_remove_table.match(self.query).group(1)
+            # REMOVE TABLE 'table1' 'table2' ... AT 'db'
+            table_args = re_remove_table.match(self.query).group(1)
             db_path = re_remove_table.match(self.query).group(2)
+            table_list = RE_ARG.findall(table_args)
 
-            breezedb.remove_table(table_name, db_path)
+            for table in table_list:
+                breezedb.remove_table(table, db_path)
 
         elif re_remove_field.match(self.query):
-            # REMOVE FIELD 'name' IN 'table' AT 'db'
-            field_name = re_remove_field.match(self.query).group(1)
+            # REMOVE FIELD 'field1' 'field2' ... IN 'table' AT 'db'
+            field_args = re_remove_field.match(self.query).group(1)
             table_name = re_remove_field.match(self.query).group(2)
             db_path = re_remove_field.match(self.query).group(3)
+            field_list = RE_ARG.findall(field_args)
 
-            breezedb.remove_field(field_name, table_name, db_path)
+            for field in field_list:
+                breezedb.remove_field(field, table_name, db_path)
 
         elif re_remove_row.match(self.query):
-            # REMOVE ROW 'index' IN 'table' AT 'db'
-            index = int(re_remove_row.match(self.query).group(1))
+            # REMOVE ROW 'index1' 'index2' ... IN 'table' AT 'db'
+            index_args = re_remove_row.match(self.query).group(1)
             table_name = re_remove_row.match(self.query).group(2)
             db_path = re_remove_row.match(self.query).group(3)
+            index_list = RE_ARG.findall(index_args)
 
-            breezedb.remove_element_row(index, table_name, db_path)
+            for index in index_list:
+                breezedb.remove_element_row(int(index), table_name, db_path)
 
         else:
             raise BreezeException('query', 'invalid query: %s' % self.query)
@@ -294,25 +302,29 @@ class Parser():
 
             :raises BreezeException: incorrect query syntax 
         """
-        re_empty_field = re.compile("EMPTY FIELD \'(.*?)\' IN \'(.*?)\' AT \'(.*?)\'")
-        re_empty_element = re.compile("EMPTY ELEMENT \'(\d)\' FROM \'(.*?)\' IN \'(.*?)\' AT \'(.*?)\'")
+        re_empty_field = re.compile("EMPTY FIELD (.*) IN \'(.*?)\' AT \'(.*?)\'")
+        re_empty_element = re.compile("EMPTY ELEMENT (.*) FROM \'(.*?)\' IN \'(.*?)\' AT \'(.*?)\'")
 
         if re_empty_field.match(self.query):
-            # EMPTY FIELD 'field' IN 'table' AT 'db'
-            field_name = re_empty_field.match(self.query).group(1)
+            # EMPTY FIELD 'field1' 'field2' ... IN 'table' AT 'db'
+            field_args = re_empty_field.match(self.query).group(1)
             table_name = re_empty_field.match(self.query).group(2)
             db_path = re_empty_field.match(self.query).group(3)
+            field_list = RE_ARG.findall(field_args)
 
-            breezedb.empty_field(field_name, table_name, db_path)
+            for field in field_list:
+                breezedb.empty_field(field, table_name, db_path)
 
         elif re_empty_element.match(self.query):
-            # EMPTY ELEMENT 'index' FROM 'field' IN 'table' AT 'db'
-            index = int(re_empty_element.match(self.query).group(1))
+            # EMPTY ELEMENT 'index1' 'index2' ... FROM 'field' IN 'table' AT 'db'
+            index_args = re_empty_element.match(self.query).group(1)
             field_name = re_empty_element.match(self.query).group(2)
             table_name = re_empty_element.match(self.query).group(3)
             db_path = re_empty_element.match(self.query).group(4)
+            index_list = RE_ARG.findall(index_args)
 
-            breezedb.empty_element(index, field, table, database)
+            for index in index_list:
+                breezedb.empty_element(int(index), field, table, database)
 
         else:
             raise BreezeException('query', 'invalid query: %s' % self.query)
