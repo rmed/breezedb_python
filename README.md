@@ -17,6 +17,20 @@ This code is written for **Python 2.7**
 - There is no need to redistribute a database with your application, as it can be created on the go.
 - *XML* structure for organizing the data.
 
+## Installation
+
+You can install the library from source by running:
+
+```
+python setup.py install
+```
+
+with the required permissions. You can also install it from PyPI by running:
+
+```
+pip install breezedb
+```
+
 ---
 
 For more information, including structures and organization, please [visit the documentation](http://pythonhosted.org/breezedb).
