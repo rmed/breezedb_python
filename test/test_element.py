@@ -48,12 +48,12 @@ class TestElement(unittest.TestCase):
 
     def test_modify_element(self):
         # Modify the last element
-        breezedb.modify_element(4, 'Nowhere', field, table, database)
+        breezedb.modify_element(4, field, table, database, 'Nowhere')
 
     def test_modify_element_inexistent(self):
         # Modify the last element
         with self.assertRaises(breezedb.BreezeException):
-            breezedb.modify_element(35, 'Test Name', field, table, database)
+            breezedb.modify_element(35, field, table, database, 'Nowhere')
 
     def test_empty_element(self):
         # Empty the content of element 0
