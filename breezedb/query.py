@@ -114,8 +114,8 @@ class Parser():
             raise BreezeException('query', 'invalid query: %s' % self.query)
 
     def get(self):
-        """ Run a GET operation. This operation works with tables, fields
-            and elements.
+        """ Run a GET operation. This operation works with databases,
+            tables, fields and elements.
 
             :returns: list of results obtained from the query
 
@@ -379,7 +379,14 @@ def run_query(query):
         :param str query: query to execute
     """
     query_list = query.split(';;')
+    result_list = []
     for subquery in query_list:
         parser = Parser(subquery)
-        return parser.run()
+        result = parser.run()
+        if result:
+            result_list.append(result)
+    
+    # Results must be parsed manually
+    if result_list:
+        return result_list
 

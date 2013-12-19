@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    structure
+   queries
    modules
 
 Indices and tables

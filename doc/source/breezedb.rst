@@ -33,6 +33,14 @@ breezedb Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`query` Module
+-------------------------------
+
+.. automodule:: query
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`breeze_exceptions` Module
 -------------------------------
 
