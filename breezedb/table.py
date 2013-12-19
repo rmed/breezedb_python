@@ -26,7 +26,7 @@
 """
 
 import xml.etree.ElementTree as XML
-import os, shutil
+import os, shutil, breezedb
 from breezedb.breeze_exceptions import BreezeException
 
 def table_exists(table_name, database):
@@ -205,6 +205,7 @@ def get_field_list(table_name, database):
         :raises BreezeException: table does not exist
     """
     if not table_exists(table_name, database):
+        print table_name
         raise BreezeException('table', 'table does not exist')
 
     fieldlist = []
@@ -217,4 +218,24 @@ def get_field_list(table_name, database):
         fieldlist.append(field.text)
 
     return fieldlist
+
+def get_element_row(index, table_name, database):
+    """ Get the elements located in a row of the table.
+
+        :param int index: index of the row
+        :param str table_name: name of the table from which to get the
+            elements
+        :param str database: path to the database
+    """
+    elementlist = []
+
+    table_file = os.path.join(database, table_name, 'tableinfo.breeze')
+    table_tree = XML.parse(table_file)
+    table_root = table_tree.getroot()
+
+    for field in table_root:
+        elementlist.append(breezedb.get_element_content(index, field.text,
+            table_name, database))
+
+    return elementlist
 
