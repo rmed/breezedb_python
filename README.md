@@ -5,11 +5,11 @@ breezedb
 
 A simple file-based database engine.
 
-**This repository contains the *Python* implementation of breezedb. For the pseudocode and more information on the project, please [visit the central repository](http://github.com/RMed/breeze_db/).**
+**This repository contains the *Python* implementation of breezedb. Documentation is available from source or [online](http://pythonhosted.org/breezedb)**
 
 This code is written for **Python 2.7**
 
-## Main characteristics
+## Main features
 
 - breezedb aims to be a simple way of storing data in files, avoiding the need for a database server to be installed and running in the machine.
 - It is meant to store small amounts of data.
@@ -19,4 +19,4 @@ This code is written for **Python 2.7**
 
 ---
 
-For more information, including structures and organization, please [visit the wiki](http://github.com/RMed/breeze_db/wiki) on the central repository.
+For more information, including structures and organization, please [visit the documentation](http://pythonhosted.org/breezedb).

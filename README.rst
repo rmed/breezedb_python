@@ -1,8 +1,20 @@
 breezedb
 ========
 
-Characteristics
----------------
+Source code is available in .. _GitHub: https://github.com/RMed/breezedb_python
+
+Changelog
+---------
+
+- Added query parser
+- Fixed some issues
+
+A list of known issues is available .. _here: https://github.com/RMed/breezedb_python/issues?state=open
+
+**NOTE: version 1.1 will be the last version using XML structure and will be considered as *legacy*. Following versions of the library will not be backwards compatible.**
+
+Overview
+--------
 
 - The database is organized in a file/directory way.
 - Data is stored using *XML* structure.
@@ -12,27 +24,19 @@ Characteristics
 Installation
 ------------
 
-- Linux/Unix (run with *superuser* permissions)
-
-::
+- Linux/Unix (run with *superuser* permissions)::
 
     # python setup.py install
 
-or using pip
-
-::
+or using pip::
 
     # pip install breezedb
 
-- Windows (run as *administrator*)
-
-::
+- Windows (run as *administrator*)::
 
     python.exe setup.py install
 
-or using pip
-
-::
+or using pip::
 
     python.exe pip install breezedb
 
@@ -41,19 +45,17 @@ or use the provided installer.
 Documentation
 -------------
 
-Documentation is available online at PyPI. If you want to build the documentation from source, navigate to the **doc** directory and run:
+Documentation is available online .. _here: http://pythonhosted.org/breezedb . This documentation includes all the available functions and extra information about the structure of the database and the query paraser.
 
-::
+If you want to build the documentation from source, navigate to the **doc** directory and run::
 
     make html
 
-For Linux/Unix systems or
-
-::
+in Linux/Unix systems or::
 
     make.bat html
 
-For Windows systems.
+in Windows systems.
 
 Test
 ----
