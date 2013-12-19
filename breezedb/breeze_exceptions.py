@@ -32,7 +32,7 @@ class BreezeException(Exception):
         occurs.
 
         :arg str level: library level in which the exception occured 
-             (db, table, field or element)
+             (db, table, field, element or query)
         :arg str msg: exception information
     """
 
