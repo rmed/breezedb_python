@@ -4,18 +4,20 @@
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# or see <http://www.gnu.org/licenses/>.
 
 """
 .. module:: field
@@ -25,261 +27,300 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import xml.etree.ElementTree as XML
-import os
-from breezedb.breeze_exceptions import BreezeException
+import codecs, json, os
+import table
 
-# Types recognized by breezedb
-TYPES = ['string', 'int', 'double', 'float', 'boolean']
+def create_field(field_name, table_name, db_path):
+    """ Create a new field in the table.
 
-def field_exists(field_name, table_name, database):
+        Adds the empty field to already existing rows.
+
+        :param str field_name: name for the new field
+        :param str table_name: name of the table that will contain the field
+        :param str db_path: path to the database
+
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: field already exists
+    """
+    try:
+        if exists_field(field_name, table_name, db_path):
+            raise Exception('Field %s already exists' % field_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        db_data[codecs.decode(table_name, 'utf-8')]['fields'].append(
+                codecs.decode(field_name, 'utf-8'))
+
+        for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
+            row[codecs.decode(field_name, 'utf-8')] = ""
+
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+
+def empty_field_row(index, field_name, table_name, db_path):
+    """ Empty the contents of a field on a single row of the table.
+
+        :param int index: index of the desired row
+        :param str field_name: name of the field to empty
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
+
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: field does not exist
+    """
+    try:
+        if not exists_field(field_name, table_name, db_path):
+            raise Exception('Field %s does not exist' % field_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        db_data[codecs.decode(table_name, 'utf-8')]['rows']\
+                [index][codecs.decode(field_name, 'utf-8')] = ""
+
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
+
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+
+def empty_field_table(field_name, table_name, db_path):
+    """ Empty the contents of a field on every row of the table.
+
+        :param str field_name: name of the field to empty
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
+
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: field does not exist
+    """
+    try:
+        if not exists_field(field_name, table_name, db_path):
+            raise Exception('Field %s does not exist' % field_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
+            row[codecs.decode(field_name, 'utf-8')] = ""
+
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+
+def exists_field(field_name, table_name, db_path):
     """ Check whether a field exists in the table or not.
 
         :param str field_name: name of the field to check
         :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-
+        :param str db_path: path to the database
         :returns: True or False
+
+        :raises IOError: cannot open file
     """    
-    table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-    table_tree = XML.parse(table_file)
-    table_root = table_tree.getroot()
-
-    exists = False
-    for field in table_root:
-        if field.text == field_name:
-            exists = True
-            break
-
-    if not exists:
-        return False
-
-    field_path = os.path.join(database, table_name, field_name)
-    if os.path.isfile(field_path):
-        return True
-    else:
-        return False
-
-def get_field_type(field_name, table_name, database):
-    """ Get the data type of a field from the <type> tag.
-
-        :param str field_name: name of the field to get the type from
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-
-        :returns str: type of the field
-
-        :raises BreezeException: field does not exist
-    """
-    if not field_exists(field_name, table_name, database):
-        raise BreezeException('field', 'field does not exist')
-
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
-
-    return field_root.find('type').text
-
-def create_field(field_name, field_type, table_name, database):
-    """ Create a new field in the table.
-
-        Add a new <field> element to the tableinfo.breeze file and create the
-        corresponding field structure. Check for existing fields and the
-        number of empty elements the new field must have.
-
-        :param str field_name: name for the new field
-        :param str field_type: type of the new field
-        :param str table_name: name of the table that will contain the field
-        :param str database: path to the database
-
-        :raises BreezeException: database is not writable,
-            a field `field_name` already exists
-    """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('field', 'cannot write to database')
-
-    if field_exists(field_name, table_name, database):
-        raise BreezeException('field', 'field already exists in the table')
-
     try:
-        table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-        table_tree = XML.parse(table_file)
-        table_root = table_tree.getroot()
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
 
-        # Find the last index in the table to create empty elements
-        last_index = -1
-        field_list = table_root.findall('field')
-        if field_list:
-            ex_field_file = os.path.join(database, table_name,
-                    field_list[0].text)
-            ex_field_tree = XML.parse(ex_field_file)
-            ex_field_root = ex_field_tree.getroot()
-            ex_elements = ex_field_root.findall('element')
-            if ex_elements:
-                last_index = int(ex_field_root[-1].get('index'))
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-        field_file = os.path.join(database, table_name, field_name)
+        if field_name.decode('utf-8') in \
+                db_data[codecs.decode(table_name, 'utf-8')]['fields']:
+            return True
+        else:
+            return False
 
-        breeze_tag = XML.Element('breeze')
-        field_tree = XML.ElementTree(breeze_tag)
-        field_root = field_tree.getroot()
+    except IOError as e:
+        raise e
 
-        new_type = XML.Element('type')
-        new_type.text = field_type
-        field_root.append(new_type)
+def get_field_data(field_name, table_name, db_path):
+    """ Get the data contained in the field for every row in the table.
 
-        # Create elements if needed
-        if last_index > -1:
-            for it in xrange(0, last_index + 1):
-                new_element = XML.Element('element')
-                new_element.set('index', str(it))
-                field_root.append(new_element)
+        :param str field_name: name of the field to get the elements from
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
 
-        field_tree.write(field_file)
+        :returns: data list sorted by order of appearance
 
-        new_field = XML.Element('field')
-        new_field.text = field_name
-        table_root.append(new_field)
+        :raises IOError: cannot open file
+        :raises KeyError: invalid field key
+        :raises Exception: field does not exist
+    """
+    try:
+        if not exists_field(field_name, table_name, db_path):
+            raise Exception('Field %s does not exist' % field_name)
 
-        table_tree.write(table_file)
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-    except IOError:
-        raise BreezeException('field', 'error writing to file')
+        datalist = []
+        for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
+            datalist.append(row[codecs.decode(field_name, 'utf-8')])
 
-def rename_field(field_name, table_name, database, new_name):
+        return datalist
+
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+
+def rename_field(field_name, table_name, db_path, new_name):
     """ Rename a field.
+
+        Renames both the element in the `fields` list and every row of
+        the table.
 
         :param str field_name: current name of the field
         :param str table_name: name of the table that contains the field
-        :param str database: path to the database
+        :param str db_path: path to the database
         :param str new_name: new name for the field
 
-        :raises BreezeException: database is not writable,
-            the field to rename does not exist,
-            a field `new_name` already exists
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: field does not exist, new field already exists
     """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('field', 'cannot write to database')
-
-    if not field_exists(field_name, table_name, database):
-        raise BreezeException('field', 'field does not exist in the table')
-
-    if field_exists(new_name, table_name, database):
-        raise BreezeException('field', 'the field %s already exists', new_name)
-
     try:
-        table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-        table_tree = XML.parse(table_file)
-        table_root = table_tree.getroot()
+        if not exists_field(table_name, db_path):
+            raise Exception('Field %s does not exist'% field_name)
+        elif exists_field(new_name, db_path):
+            raise Exception('Field %s already exists' % new_name)
 
-        for field in table_root:
-            if field.text == field_name:
-                field.text = new_name
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        for index, field in enumerate(
+                db_data[codecs.decode(table_name, 'utf-8')]['fields']):
+            if field_name.decode('utf-8') == field:
+                db_data[codecs.decode(table_name, 'utf-8')]['fields'][index] =\
+                         codecs.decode(new_name, 'utf-8')
                 break
 
-        table_tree.write(table_file)
+        for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
+            row[codecs.decode(new_name, 'utf-8')] =\
+                    row[codecs.decode(field_name, 'utf-8')]
+            del row[codecs.decode(field_name, 'utf-8')]
 
-        src = os.path.join(database, table_name, field_name)
-        dst = os.path.join(database, table_name, new_name)
-        os.rename(src, dst)
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-    except IOError:
-        raise BreezeException('field', 'could not rename the field')
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
 
-    except OSError:
-        raise BreezeException('field', 'could not rename the file')
-
-def remove_field(field_name, table_name, database):
+def remove_field(field_name, table_name, db_path):
     """ Remove a field from the table.
 
-        Remove the corresponding file and <field> element
-        from the tableinfo.breeze file
+        Removes the field from both the list of fields and every row of
+        the table.
 
         :param str field_name: name of the field to remove
         :param str table_name: name of the table that contains the field
         :param str database: path to the database
         
-        :raises BreezeException: database is not writable,
-            field does not exist
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: field does not exist
     """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('field', 'cannot write to database')
-
-    if not field_exists(field_name, table_name, database):
-        raise BreezeException('field', 'field does not exist in the table')
-
     try:
-        table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-        table_tree = XML.parse(table_file)
-        table_root = table_tree.getroot()
+        if not exists_field(table_name, db_path):
+            raise Exception('Field %s does not exist' % field_name)
 
-        for field in table_root:
-            if field.text == field_name:
-                table_root.remove(field)
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        for index, field in enumerate(
+                db_data[codecs.decode(table_name, 'utf-8')]['fields']):
+            if field_name.decode('utf-8') == field:
+                del db_data[codecs.decode(table_name, 'utf-8')]['fields'][index]
                 break
 
-        table_tree.write(table_file)
+        for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
+            del row[codecs.decode(field_name, 'utf-8')]
 
-        field_file = os.path.join (database, table_name, field_name)
-        os.remove(field_file)
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-    except OSError:
-        raise BreezeException('field', 'could not remove file')
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
 
-def empty_field(field_name, table_name, database):
-    """ Empty the contents of a field.
+def swap_fields(index1, index2, table_name, db_path):
+    """ Swap two field indexes in the specified table. This affects the
+        priority order of the fields.
 
-        Remove the all the <element> tags from the file but
-        preserve the <type> tab.
+        :param int index1: first field index to swap
+        :param int index2: second field index to swap
+        :param str table_name: table in which to perform the swap
+        :param str db_path: path to the database
 
-        :param str field_name: name of the field to empty
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-
-        :raises BreezeException: database is not writable,
-            field does not exist
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises TypeError: invalid index type
+        :raises Exception: field does not exist 
     """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('field', 'cannot write to database')
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
 
-    if not field_exists(field_name, table_name, database):
-        raise BreezeException('field', 'field does not exist in the table')
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
+        temp = db_data[codecs.decode(table_name, 'utf-8')]['fields'][index1]
+        db_data[codecs.decode(table_name, 'utf-8')]['fields'][index1] =\
+                db_data[codecs.decode(table_name, 'utf-8')]['fields'][index2]
+        db_data[codecs.decode(table_name, 'utf-8')]['fields'][index2] = temp
 
-    for element in field_root.iter('element'):
-        element.text = ""
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-    field_tree.write(field_file)
-
-def get_element_list(field_name, table_name, database):
-    """ Get a list of elements contained in the field.
-
-        :param str field_name: name of the field to get the elements from
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-
-        :returns: list of elements
-
-        :raises BreezeException: field does not exist
-    """
-    elemlist = []
-
-    if not field_exists(field_name, table_name, database):
-        raise BreezeException('field', 'field does not exist in the table')
-
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
-
-    for element in field_root.iter('element'):
-        elemlist.append(element.text)
-
-    return elemlist
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+    except TypeError as e:
+        raise e
 

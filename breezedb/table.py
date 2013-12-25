@@ -4,18 +4,20 @@
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# or see <http://www.gnu.org/licenses/>.
 
 """
 .. module:: table
@@ -25,217 +27,250 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import xml.etree.ElementTree as XML
-import os, shutil, breezedb
-from breezedb.breeze_exceptions import BreezeException
+import codecs, json, os
+import db
 
-def table_exists(table_name, database):
-    """ Check whether a table exists in the database or not.
-    
-        :param table_name: name of the table to check
-        :type table_name: str
-        :param database: path to the database in which to check
-        :type database: str
-
-        :returns: True or False
-    """
-    breeze_file = os.path.join(database, 'root.breeze')
-    breeze_tree = XML.parse(breeze_file)
-    breeze_root = breeze_tree.getroot()   
- 
-    exists = False
-    for table in breeze_root:
-        if table.text == table_name:
-            exists = True
-            break
-
-    if not exists:
-        return False
-
-    table_path = os.path.join(database, table_name)
-    if os.path.exists(table_path):
-        exists = True
-    else:
-        exists  = False
-
-    if not exists:
-        return False
-
-    table_file = os.path.join(table_path, 'tableinfo.breeze')
-    if os.path.isfile(table_file):
-        return True
-    else:
-        return False
-
-def create_table(table_name, database):
+def create_table(table_name, db_path):
     """ Create a new table in the database.
 
-        Adds a new <table> element to the root.breeze file and create the
-        corresponding table structure.
-
         :param str table_name: name of the new table
-        :param str database: path to the database
+        :param str db_path: path to the database
 
-        :raises BreezeException: database is not writable,
-            table already exists, table cannot be created
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: table already exists
     """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('table', 'cannot write to database')
-
-    if table_exists(table_name, database):
-        raise BreezeException('table', 'table already exists')
-
     try:
-        newdir = os.path.join(database, table_name)
-        os.makedirs(newdir, 0755)
+        if exists_table(table_name, db_path):
+            raise Exception('Table %s already exists' % table_name)
 
-        table_file = os.path.join(newdir, 'tableinfo.breeze')
-        breeze_tag = XML.Element('breeze')
-        table_tree = XML.ElementTree(breeze_tag)
-        table_tree.write(table_file)
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-        breeze_file = os.path.join(database, 'root.breeze')
-        breeze_tree = XML.parse(breeze_file)
-        breeze_root = breeze_tree.getroot()
+        db_data[codecs.decode(table_name, 'utf-8')] = {"fields":[],"rows":[]}
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-        new_table = XML.Element('table')
-        new_table.text = table_name
-        breeze_root.append(new_table)
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
 
-        breeze_tree.write(breeze_file)
+def exists_table(table_name, db_path):
+    """ Check whether a table exists in the database or not.
+    
+        :param str table_name: name of the table to find
+        :param str db_path: path to the database
+        :returns: True or False
 
-    except OSError:
-        raise BreezeException('table', 'could not create base directory')
-
-    except IOError:
-        raise BreezeException('table', 'error writing to file')
-
-def rename_table(table_name, database, new_name):
-    """ Rename a table from the database.
-
-        :param str table_name: current name of the table
-        :param str database: path to the database
-        :param str new_name: new name for the table
-
-        :raises BreezeException: database is not writable,
-            the specified table does not exist,
-            a table named `new_name` already exists
+        :raises IOError: cannot open file
+        :raises Exception: not a breezedb database
     """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('table', 'cannot write to database')
-
-    if not table_exists(table_name, database):
-        raise BreezeException('table', 'table does not exist')
-
-    if table_exists(new_name, database):
-        raise BreezeException('table', 'table %s already exists'
-            % new_name)
-
     try:
-        breeze_file = os.path.join(database, 'root.breeze')
-        breeze_tree = XML.parse(breeze_file)
-        breeze_root = breeze_tree.getroot()
+        if not db.is_brdb(db_path):
+            raise Exception('Not a breezedb database: %s' % db_path)
 
-        for table in breeze_root:
-            if table.text == table_name:
-                table.text = new_name
-                break
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-        breeze_tree.write(breeze_file)
+        if table_name.decode('utf-8') in sorted(db_data.iterkeys()):
+            return True
+        else:
+            return False
 
-        src = os.path.join(database, table_name)
-        dst = os.path.join(database, new_name)
-        os.rename(src, dst)
+    except IOError as e:
+        raise e
 
-    except IOError:
-        raise BreezeException('table', 'could not rename table')
-
-    except OSError:
-        raise BreezeException('table', 'cold not rename directory')
-
-def remove_table(table_name, database):
-    """ Remove a table from the database.
-
-        Removes the corresponding directory and <table> element
-        from root.breeze file
-
-        :param str table_name: name of the table to remove
-        :param str database: path to the database
-
-        :raises BreezeException: database is not writable,
-            table does not exist
-    """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('table', 'cannot write to database')
-
-    if not table_exists(table_name, database):
-        raise BreezeException('table', 'table does not exist')
-
-    try:
-        breeze_file = os.path.join(database, 'root.breeze')
-        breeze_tree = XML.parse(breeze_file)
-        breeze_root = breeze_tree.getroot()
-
-        for table in breeze_root:
-            if table.text == table_name:
-                breeze_root.remove(table)
-                break
-
-        breeze_tree.write(breeze_file)
-
-        table_dir = os.path.join(database, table_name)
-        shutil.rmtree(table_dir)
-
-    except OSError:
-        raise BreezeException('table', 'could not remove table directory')
-
-    except IOError:
-        raise BreezeException('table', 'error writing to file')
-
-def get_field_list(table_name, database):
-    """ Get a list of fields present in the table.
-
-        :param str table_name: name of the table from which to get
-            the fields
-        :param str database: path to the database
-
-        :raises BreezeException: table does not exist
-    """
-    if not table_exists(table_name, database):
-        print table_name
-        raise BreezeException('table', 'table does not exist')
-
-    fieldlist = []
-
-    table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-    table_tree = XML.parse(table_file)
-    table_root = table_tree.getroot()
-
-    for field in table_root:
-        fieldlist.append(field.text)
-
-    return fieldlist
-
-def get_element_row(index, table_name, database):
+def get_row(index, table_name, db_path):
     """ Get the elements located in a row of the table.
 
         :param int index: index of the row
-        :param str table_name: name of the table from which to get the
-            elements
-        :param str database: path to the database
+        :param str table_name: name of the table
+        :param str db_path: path to the database
+        :returns: list containing the data of the row, ordered by field
+
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises KeyError: invalid field key
+        :raises Exception: table does not exist
     """
-    elementlist = []
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
 
-    table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-    table_tree = XML.parse(table_file)
-    table_root = table_tree.getroot()
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-    for field in table_root:
-        elementlist.append(breezedb.get_element_content(index, field.text,
-            table_name, database))
+        elementlist = []
+        table = codecs.decode(table_name, 'utf-8')
+        for field in db_data[table]['fields']:
+            elementlist.append(db_data[table]['rows'][index][field])
 
-    return elementlist
+        return elementlist
+
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+
+def get_field_list(table_name, db_path):
+    """ Get a list of fields present in the table.
+
+        :param str table_name: name of the table
+        :param str db_path: path to the database
+        :returns: list containing the fields of the table
+
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises Exception: table does not exist
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        return db_data[codecs.decode(table_name, 'utf-8')]['fields']
+
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+
+def rename_table(table_name, db_path, new_name):
+    """ Rename a table from the database.
+
+        :param str table_name: current name of the table
+        :param str db_path: path to the database
+        :param str new_name: new name for the table
+
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: table does not exist, new table already exists
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+        elif exists_table(new_name, db_path):
+            raise Exception('Table %s already exists' % new_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        db_data[codecs.decode(new_name, 'utf-8')] =\
+                db_data[codecs.decode(table_name, 'utf-8')]
+        del db_data[codecs.decode(table_name, 'utf-8')]
+
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+
+def remove_table(table_name, db_path):
+    """ Remove a table from the database.
+
+        :param str table_name: name of the table to remove
+        :param str db_path: path to the database
+
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: not a breezedb database, table does not exist
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        del db_data[codecs.decode(table_name, 'utf-8')]
+
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()        
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+
+def search_data(data, table_name, db_path, field_name=None, ignore_case=True):
+    """ Search data in the table and obtain the index of the rows that
+        match the criteria.
+
+        :param str data: data to find
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
+        :param str field_name: name of the field that contains the element.
+            If None is specified, then the function will search in all the
+            fields of the table in every row
+        :param Boolean ignore_case: whether or not to ignore the case
+            when searching
+        :returns: list of indexes that match the criteria
+
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: not a breezedb database, table does not exist
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        index_list = []
+        for index, row in enumerate(db_data[codecs.decode(
+                table_name, 'utf-8')]['rows']):
+            if field_name:
+                element = row[codecs.decode(field_name, 'utf-8')]
+                if ignore_case and isinstance(element, (str, unicode)):
+                    if data.decode('utf-8').lower() in element.lower():
+                        index_list.append(index)
+                elif not ignore_case and isinstance(element, (str, unicode)):
+                    if data.decode('utf-8') in element:
+                        index_list.append(index)
+                else:
+                    # Numbers
+                    if data == element:
+                        index_list.append(index)
+            else:
+                for value in sorted(row.itervalues()):              
+                    if ignore_case and isinstance(value, (str, unicode)):
+                        if data.decode('utf-8').lower() in value.lower():
+                            index_list.append(index)
+                            break
+                    elif not ignore_case and isinstance(value, (str, unicode)):
+                        if data.decode('utf-8') in value:
+                            index_list.append(index)
+                            break
+                    else:
+                        # Numbers
+                        if data == value:
+                            index_list.append(index)
+                            break
+        return index_list
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
 
