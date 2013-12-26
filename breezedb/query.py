@@ -28,10 +28,13 @@
 """
 
 import re
-import db, element, field, table
+from db import *
+from table import *
+from field import *
+from element import *
 
 # Regular expression for arguments
-RE_ARG = re.compile('\"\"(.*?)\"\"')
+RE_ARG = re.compile('%(.+?)%;')
 
 class Parser():
     """ Parses the query and divides it into subqueries where possible.
@@ -72,19 +75,19 @@ class Parser():
 
             :raises Exception: incorrect query syntax          
         """
-        re_create_db = re.compile("CREATE DB \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_create_table = re.compile("CREATE TABLE (.*) AT \"\"(.*?)\"\"")
-        re_create_field = re.compile("CREATE FIELD (.*) IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_create_row = re.compile("CREATE ROW (.*) IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_create_db = re.compile("CREATE DB %(.+?)%; AT %(.+?)%;")
+        re_create_table = re.compile("CREATE TABLE (.*) AT %(.+?)%;")
+        re_create_field = re.compile("CREATE FIELD (.*) IN %(.+?)%; AT %(.+?)%;")
+        re_create_row = re.compile("CREATE ROW (.*) IN %(.+?)%; AT %(.+?)%;")
 
         if re_create_db.match(self.query):
-            # CREATE DB ""name"" AT ""path""
+            # CREATE DB %name%; AT %path%;
             db_name = re_create_db.match(self.query).group(1)
             db_path = re_create_db.match(self.query).group(2)
             create_db(db_path, db_name)
         
         elif re_create_table.match(self.query):
-            # CREATE TABLE ""table1"" ""table2"" ...  AT ""db""
+            # CREATE TABLE %table1%; %table2%; ...  AT %db%;
             table_args = re_create_table.match(self.query).group(1)
             db_path = re_create_table.match(self.query).group(2)
             table_list = RE_ARG.findall(table_args)
@@ -93,7 +96,7 @@ class Parser():
                 create_table(t, db_path)
 
         elif re_create_field.match(self.query):
-            # CREATE FIELD ""name1"" ""name2"" ... IN ""table"" AT ""db""
+            # CREATE FIELD %name1%; %name2%; ... IN %table%; AT %db%;
             field_args = re_create_field.match(self.query).group(1)
             table_name = re_create_field.match(self.query).group(2)
             db_path = re_create_field.match(self.query).group(3)
@@ -103,7 +106,7 @@ class Parser():
                 create_field(f, table_name, db_path)
 
         elif re_create_row.match(self.query):
-            # CREATE ROW ""element"" ""element"" ... IN ""table"" AT ""db""
+            # CREATE ROW %element%; %element%; ... IN %table%; AT %db%;
             element_args = re_create_row.match(self.query).group(1)
             table_name = re_create_row.match(self.query).group(2)
             db_path = re_create_row.match(self.query).group(3)
@@ -120,12 +123,12 @@ class Parser():
 
             :raises Exception: incorrect query syntax 
         """
-        re_empty_field = re.compile("EMPTY FIELD (.*) IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_empty_field_row = re.compile("EMPTY FIELD (.*) OF \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_empty_element = re.compile("EMPTY ELEMENT (.*) FROM \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_empty_field = re.compile("EMPTY FIELD (.*) IN %(.+?)%; AT %(.+?)%;")
+        re_empty_field_row = re.compile("EMPTY FIELD (.*) OF %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
+        re_empty_element = re.compile("EMPTY ELEMENT (.*) FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
 
         if re_empty_fields.match(self.query):
-            # EMPTY FIELD ""field1"" ""field2"" ... IN ""table"" AT ""db""
+            # EMPTY FIELD %field1%; %field2%; ... IN %table%; AT %db""
             field_args = re_empty_field.match(self.query).group(1)
             table_name = re_empty_field.match(self.query).group(2)
             db_path = re_empty_field.match(self.query).group(3)
@@ -135,7 +138,7 @@ class Parser():
                 empty_field_table(f, table_name, db_path)
 
         elif re_empty_field.match(self.query):
-            # EMPTY FIELD ""field1"" ""field2"" ... OF ""index"" IN ""table"" AT ""db""
+            # EMPTY FIELD %field1%; %field2%; ... OF %index%; IN %table%; AT %db""
             field_args = re_empty_field_row.match(self.query).group(1)
             index = int(re_empty_field_row.match(self.query).group(1))
             table_name = re_empty_field_row.match(self.query).group(3)
@@ -146,7 +149,7 @@ class Parser():
                 empty_field_row(index, f, table_name, db_path)
 
         elif re_empty_element.match(self.query):
-            # EMPTY ELEMENT ""index1"" ""index2"" ... FROM ""field"" IN ""table"" AT ""db""
+            # EMPTY ELEMENT %index1%; %index2%; ... FROM %field%; IN %table%; AT %db""
             index_args = re_empty_element.match(self.query).group(1)
             field_name = re_empty_element.match(self.query).group(2)
             table_name = re_empty_element.match(self.query).group(3)
@@ -167,19 +170,19 @@ class Parser():
 
             :raises Exception: incorrect query syntax 
         """
-        re_exists_table = re.compile("EXISTS TABLE \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_exists_field = re.compile("EXISTS FIELD \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_exists_row = re.compile("EXISTS ROW \"\"(\d)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_exists_table = re.compile("EXISTS TABLE %(.+?)%; AT %(.+?)%;")
+        re_exists_field = re.compile("EXISTS FIELD %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
+        re_exists_row = re.compile("EXISTS ROW %(\d)%; IN %(.+?)%; AT %(.+?)%;")
 
         if re_exists_table.match(self.query):
-            # EXISTS TABLE ""table"" AT ""db""
+            # EXISTS TABLE %table%; AT %db""
             table_name = re_exists_table.match(self.query).group(1)
             db_path = re_exists_table.match(self.query).group(2)
 
             return exists_table(table_name, db_path)
 
         elif re_exists_field.match(self.query):
-            # EXISTS FIELD ""field"" IN ""table"" AT ""db""
+            # EXISTS FIELD %field%; IN %table%; AT %db""
             field_name = re_exists_field.match(self.query).group(1)
             table_name = re_exists_field.match(self.query).group(2)
             db_path = re_exists_field.match(self.query).group(3)
@@ -187,7 +190,7 @@ class Parser():
             return exists_field(field_name, table_name, db_path)
 
         elif re_exists_row.match(self.query):
-            # EXISTS ROW ""index"" IN ""table"" AT ""db""
+            # EXISTS ROW %index%; IN %table%; AT %db""
             index = int(re_exists_row.match(self.query).group(1))
             table_name = re_exists_row.match(self.query).group(2)
             db_path = re_exists_row.match(self.query).group(3)
@@ -205,27 +208,27 @@ class Parser():
 
             :raises Exception: incorrect query syntax
         """
-        re_get_tables = re.compile("GET TABLES AT \"\"(.*?)\"\"")
-        re_get_fields = re.compile("GET FIELDS IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_get_elements = re.compile("GET ELEMENTS FROM \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_get_row = re.compile("GET ROW \"\"(\d)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_get_element = re.compile("GET ELEMENT \"\"(\d)\"\" FROM \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_get_tables = re.compile("GET TABLES AT %(.+?)%;")
+        re_get_fields = re.compile("GET FIELDS IN %(.+?)%; AT %(.+?)%;")
+        re_get_elements = re.compile("GET ELEMENTS FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
+        re_get_row = re.compile("GET ROW %(\d)%; IN %(.+?)%; AT %(.+?)%;")
+        re_get_element = re.compile("GET ELEMENT %(\d)%; FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
 
         if re_get_tables.match(self.query):
-            # GET TABLES AT ""db""
+            # GET TABLES AT %db""
             db_path = re_get_tables.match(self.query).group(1)
 
             return get_table_list(db_path)
 
         elif re_get_fields.match(self.query):
-            # GET FIELDS IN ""table"" AT ""db""
+            # GET FIELDS IN %table%; AT %db""
             table_name = re_get_fields.match(self.query).group(1)
             db_path = re_get_fields.match(self.query).group(2)
             
             return get_field_list(table_name, db_path)
 
         elif re_get_elements.match(self.query): 
-            # GET ELEMENTS FROM ""field"" IN ""table"" AT ""db""
+            # GET ELEMENTS FROM %field%; IN %table%; AT %db""
             field_name = re_get_elements.match(self.query).group(1)
             table_name = re_get_elements.match(self.query).group(2)
             db_path = re_get_elements.match(self.query).group(3)
@@ -233,7 +236,7 @@ class Parser():
             return get_field_data(field_name, table_name, db_path)
 
         elif re_get_row.match(self.query):
-            # GET ROW ""index"" IN ""table"" AT ""db""
+            # GET ROW %index%; IN %table%; AT %db""
             index = int(re_get_row.match(self.query).group(1))
             table_name = re_get_row.match(self.query).group(2)
             db_path = re_get_row.match(self.query).group(3)
@@ -241,7 +244,7 @@ class Parser():
             return get_row(index, table_name, db_path)
 
         elif re_get_element.match(self.query):
-            # GET ELEMENT ""index"" FROM ""field"" IN ""table"" AT ""db""
+            # GET ELEMENT %index%; FROM %field%; IN %table%; AT %db""
             index = int(re_get_element.match(self.query).group(1))
             field_name = re_get_element.match(self.query).group(2)
             table_name = re_get_element.match(self.query).group(3)
@@ -257,10 +260,10 @@ class Parser():
 
             :raises Exception: incorrect query syntax 
         """
-        re_modify = re.compile("MODIFY \"\"(\d)\"\" FROM \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\" TO \"\"(.*?)\"\"")
+        re_modify = re.compile("MODIFY %(\d)%; FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%; TO %(.+?)%;")
 
         if re_modify.match(self.query):
-            # MODIFY ""index"" FROM ""field"" IN ""table"" AT ""db"" TO ""new content""
+            # MODIFY %index%; FROM %field%; IN %table%; AT %db%; TO %new content""
             index = int(re_modify.match(self.query).group(1))
             field_name = re_modify.match(self.query).group(2)
             table_name = re_modify.match(self.query).group(3)
@@ -278,19 +281,19 @@ class Parser():
 
             :raises Exception: incorrect query syntax
         """
-        re_remove_db = re.compile("REMOVE DB AT \"\"(.*?)\"\"")
-        re_remove_table = re.compile("REMOVE TABLE (.*) AT \"\"(.*?)\"\"")
-        re_remove_field = re.compile("REMOVE FIELD (.*) IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_remove_row = re.compile("REMOVE ROW (.*) IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_remove_db = re.compile("REMOVE DB AT %(.+?)%;")
+        re_remove_table = re.compile("REMOVE TABLE (.*) AT %(.+?)%;")
+        re_remove_field = re.compile("REMOVE FIELD (.*) IN %(.+?)%; AT %(.+?)%;")
+        re_remove_row = re.compile("REMOVE ROW (.*) IN %(.+?)%; AT %(.+?)%;")
 
         if re_remove_db.match(self.query):
-            # REMOVE DB AT ""path""
+            # REMOVE DB AT %path""
             db_path = re_remove_db.match(self.query).group(1)
 
             remove_db(db_path)
 
         elif re_remove_table.match(self.query):
-            # REMOVE TABLE ""table1"" ""table2"" ... AT ""db""
+            # REMOVE TABLE %table1%; %table2%; ... AT %db""
             table_args = re_remove_table.match(self.query).group(1)
             db_path = re_remove_table.match(self.query).group(2)
             table_list = RE_ARG.findall(table_args)
@@ -299,7 +302,7 @@ class Parser():
                 remove_table(t, db_path)
 
         elif re_remove_field.match(self.query):
-            # REMOVE FIELD ""field1"" ""field2"" ... IN ""table"" AT ""db""
+            # REMOVE FIELD %field1%; %field2%; ... IN %table%; AT %db""
             field_args = re_remove_field.match(self.query).group(1)
             table_name = re_remove_field.match(self.query).group(2)
             db_path = re_remove_field.match(self.query).group(3)
@@ -309,7 +312,7 @@ class Parser():
                 remove_field(f, table_name, db_path)
 
         elif re_remove_row.match(self.query):
-            # REMOVE ROW ""index1"" ""index2"" ... IN ""table"" AT ""db""
+            # REMOVE ROW %index1%; %index2%; ... IN %table%; AT %db""
             index_args = re_remove_row.match(self.query).group(1)
             table_name = re_remove_row.match(self.query).group(2)
             db_path = re_remove_row.match(self.query).group(3)
@@ -327,11 +330,11 @@ class Parser():
 
             :raises Exception: incorrect query syntax
         """
-        re_rename_table = re.compile("RENAME TABLE \"\"(.*?)\"\" AT \"\"(.*?)\"\" TO \"\"(.*?)\"\"")
-        re_rename_field = re.compile("RENAME FIELD \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\" TO \"\"(.*?)\"\"")
+        re_rename_table = re.compile("RENAME TABLE %(.+?)%; AT %(.+?)%; TO %(.+?)%;")
+        re_rename_field = re.compile("RENAME FIELD %(.+?)%; IN %(.+?)%; AT %(.+?)%; TO %(.+?)%;")
 
         if re_rename_table.match(self.query) :
-            # RENAME TABLE ""name"" AT ""db"" TO ""new name""
+            # RENAME TABLE %name%; AT %db%; TO %new name""
             table_name = re_rename_table.match(self.query).group(1)
             db_path = re_rename_table.match(self.query).group(2)
             new_name = re_rename_table.match(self.query).group(3)
@@ -339,7 +342,7 @@ class Parser():
             rename_table(table_name, db_path, new_name)
         
         elif re_rename_field.match(self.query):
-            # RENAME FIELD ""name"" IN ""table"" AT ""db"" TO ""new name""
+            # RENAME FIELD %name%; IN %table%; AT %db%; TO %new name""
             field_name = re_rename_field.match(self.query).group(1)
             table_name = re_rename_field.match(self.query).group(2)
             db_path = re_rename_field.match(self.query).group(3)
@@ -357,11 +360,11 @@ class Parser():
 
             :raises Exception: incorrect query syntax 
         """
-        re_search = re.compile("FIND \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
-        re_search_field = re.compile("FIND \"\"(.*?)\"\" FROM \"\"(.*?)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_search = re.compile("FIND %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
+        re_search_field = re.compile("FIND %(.+?)%; FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
 
         if re_find.match(self.query):
-            # SEARCH ""data"" IN ""table"" AT ""db""
+            # SEARCH %data%; IN %table%; AT %db""
             data = re_search.match(self.query).group(1)
             table_name = re_search.match(self.query).group(2)
             db_path = re_search.match(self.query).group(3)
@@ -369,7 +372,7 @@ class Parser():
             return search_data(data, table_name, db_path)
 
         elif re_find.match(self.query):
-            # SEARCH ""data"" FROM ""field"" IN ""table"" AT ""db""
+            # SEARCH %data%; FROM %field%; IN %table%; AT %db""
             data = re_search_field.match(self.query).group(1)
             field_name = re_search_field.match(self.query).group(2)
             table_name = re_search_field.match(self.query).group(3)
@@ -385,10 +388,10 @@ class Parser():
 
             :raises Exception: incorrect query syntax
         """
-        re_swap = re.compile("SWAP \"\"(\d)\"\" WITH \"\"(\d)\"\" IN \"\"(.*?)\"\" AT \"\"(.*?)\"\"")
+        re_swap = re.compile("SWAP %(\d)%; WITH %(\d)%; IN %(.+?)%; AT %(.+?)%;")
 
         if re_swap.match(self.query):
-            # SWAP ""index1"" WITH ""index2"" IN ""table"" AT ""db""
+            # SWAP %index1%; WITH %index2%; IN %table%; AT %db""
             index1 = int(re_swap.match(self.query).group(1))
             index2 = int(re_swap.match(self.query).group(2))
             table_name = re_modify.match(self.query).group(3)
