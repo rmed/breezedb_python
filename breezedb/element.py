@@ -28,7 +28,7 @@
 """
 
 import codecs, json, os
-import table
+from table import exists_table
 
 def create_row(element_list, table_name, db_path):
     """ Creates a row of elements in the given table.
@@ -50,7 +50,7 @@ def create_row(element_list, table_name, db_path):
         :raises Exception: table does not exist
     """
     try:
-        if not table.exists_table(table_name, db_path):
+        if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist', table_name)
 
         db_file = codecs.open(db_path, 'r', 'utf-8')
@@ -61,10 +61,10 @@ def create_row(element_list, table_name, db_path):
         for index, field in enumerate(
                 db_data[codecs.decode(table_name, 'utf-8')]['fields']):
             # It is not possible to decode a number
-            if isinstance(element_list[index], (int, long, float, complex)):
-                new_row[field] = element_list[index]
-            else:
+            if isinstance(element_list[index], (str, unicode)):
                 new_row[field] = codecs.decode(element_list[index], 'utf-8')
+            else:
+                new_row[field] = element_list[index]
 
         db_data[codecs.decode(table_name, 'utf-8')]['rows'].append(new_row)
 
@@ -142,7 +142,7 @@ def exists_row(index, table_name, db_path):
         :raises Exception: table does not exist
     """
     try:
-        if not table.exists_table(table_name, db_path):
+        if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
         db_file = codecs.open(db_path, 'r', 'utf-8')
@@ -167,7 +167,7 @@ def exists_row(index, table_name, db_path):
 def get_element_data(index, field_name, table_name, db_path):
     """ Get the data contained in a specific element.
 
-        :param int element_index: index of the element
+        :param int element_index: index of the row
         :param str field_name: name of the field that contains the element
         :param str table_name: name of the table that contains the field
         :param str db_path: path to the database
@@ -223,9 +223,14 @@ def modify_element(index, field_name, table_name, db_path, new_content):
         db_data = json.load(db_file)
         db_file.close()
 
-        db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
-                [codecs.decode(field_name, 'utf-8')] =\
-                codecs.decode(new_content, 'utf-8')
+        # It is not possible to decode a number
+        if isinstance(new_content, (str, unicode)):
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] =\
+                    codecs.decode(new_content, 'utf-8')
+        else:
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] = new_content
 
         db_file = codecs.open(db_path, 'w', 'utf-8')
         db_file.write(json.dumps(db_data, ensure_ascii=False,

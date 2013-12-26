@@ -28,7 +28,7 @@
 """
 
 import codecs, json, os
-import table
+from table import exists_table
 
 def create_field(field_name, table_name, db_path):
     """ Create a new field in the table.
@@ -210,9 +210,9 @@ def rename_field(field_name, table_name, db_path, new_name):
         :raises Exception: field does not exist, new field already exists
     """
     try:
-        if not exists_field(table_name, db_path):
+        if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist'% field_name)
-        elif exists_field(new_name, db_path):
+        elif exists_field(new_name, table_name, db_path):
             raise Exception('Field %s already exists' % new_name)
 
         db_file = codecs.open(db_path, 'r', 'utf-8')
@@ -256,7 +256,7 @@ def remove_field(field_name, table_name, db_path):
         :raises Exception: field does not exist
     """
     try:
-        if not exists_field(table_name, db_path):
+        if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist' % field_name)
 
         db_file = codecs.open(db_path, 'r', 'utf-8')

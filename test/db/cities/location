@@ -1,8 +1,0 @@
-<breeze>
-    <type>string</type>
-    <element index="0">United Kingdom</element>
-    <element index="1">France</element>
-    <element index="2">Germany</element>
-    <element index="3">Spain</element>
-    <element index="4">Italy</element>
-</breeze>
