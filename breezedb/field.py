@@ -30,29 +30,35 @@
 import codecs, json, os
 from table import exists_table
 
-def create_field(field_name, table_name, db_path):
+DTYPES = ['str', 'int', 'float', 'bool']
+
+def create_field(field_name, field_type, table_name, db_path):
     """ Create a new field in the table.
 
         Adds the empty field to already existing rows.
 
         :param str field_name: name for the new field
+        :param str field_type: data type, available types are 'str', 'int',
+            'float', 'bool'
         :param str table_name: name of the table that will contain the field
         :param str db_path: path to the database
 
         :raises IOError: cannot open file
         :raises OSError: error writing to database
-        :raises Exception: field already exists
+        :raises Exception: field already exists, not a valid data type
     """
     try:
         if exists_field(field_name, table_name, db_path):
             raise Exception('Field %s already exists' % field_name)
+        elif field_type not in DTYPES:
+            raise Exception('Invalid data type %s' % field_type)
 
         db_file = codecs.open(db_path, 'r', 'utf-8')
         db_data = json.load(db_file)
         db_file.close()
 
         db_data[codecs.decode(table_name, 'utf-8')]['fields'].append(
-                codecs.decode(field_name, 'utf-8'))
+                {codecs.decode(field_name, 'utf-8'):field_type})
 
         for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
             row[codecs.decode(field_name, 'utf-8')] = ""
@@ -65,6 +71,8 @@ def create_field(field_name, table_name, db_path):
     except IOError as e:
         raise e
     except OSError as e:
+        raise e
+    except TypeError as e:
         raise e
 
 def empty_field_row(index, field_name, table_name, db_path):
@@ -153,11 +161,11 @@ def exists_field(field_name, table_name, db_path):
         db_data = json.load(db_file)
         db_file.close()
 
-        if field_name.decode('utf-8') in \
-                db_data[codecs.decode(table_name, 'utf-8')]['fields']:
-            return True
-        else:
-            return False
+        for f in db_data[codecs.decode(table_name, 'utf-8')]['fields']:
+            if field_name.decode('utf-8') in f:
+                return True
+
+        return False
 
     except IOError as e:
         raise e
@@ -188,6 +196,36 @@ def get_field_data(field_name, table_name, db_path):
             datalist.append(row[codecs.decode(field_name, 'utf-8')])
 
         return datalist
+
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+
+def get_field_type(field_name, table_name, db_path):
+    """ Get the data type contained in a specific field for parsing
+        purposes.
+
+        :param str field_name: name of the field to get the elements from
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
+        :returns: string with the data type
+
+        :raises IOError: cannot open file
+        :raises KeyError: invalid field key
+        :raises Exception: field does not exist
+    """
+    try:
+        if not exists_field(field_name, table_name, db_path):
+            raise Exception('Field %s does not exist' % field_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        for f in db_data[codecs.decode(table_name, 'utf-8')]['fields']:
+            if field_name.decode('utf-8') in f:
+                return f.values()[0]
 
     except IOError as e:
         raise e
@@ -263,9 +301,9 @@ def remove_field(field_name, table_name, db_path):
         db_data = json.load(db_file)
         db_file.close()
 
-        for index, field in enumerate(
+        for index, f in enumerate(
                 db_data[codecs.decode(table_name, 'utf-8')]['fields']):
-            if field_name.decode('utf-8') == field:
+            if field_name.decode('utf-8') in f.keys():
                 del db_data[codecs.decode(table_name, 'utf-8')]['fields'][index]
                 break
 

@@ -85,6 +85,32 @@ def exists_table(table_name, db_path):
     except IOError as e:
         raise e
 
+def get_field_list(table_name, db_path):
+    """ Get a list of fields present in the table.
+
+        :param str table_name: name of the table
+        :param str db_path: path to the database
+        :returns: list containing the fields of the table
+
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises Exception: table does not exist
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        return db_data[codecs.decode(table_name, 'utf-8')]['fields']
+
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+
 def get_row(index, table_name, db_path):
     """ Get the elements located in a row of the table.
 
@@ -108,39 +134,13 @@ def get_row(index, table_name, db_path):
 
         elementlist = []
         table = codecs.decode(table_name, 'utf-8')
-        for field in db_data[table]['fields']:
-            elementlist.append(db_data[table]['rows'][index][field])
+        for f in db_data[table]['fields']:
+            elementlist.append(db_data[table]['rows'][index][f.keys()[0]])
 
         return elementlist
 
     except IndexError as e:
         raise e
-    except IOError as e:
-        raise e
-    except KeyError as e:
-        raise e
-
-def get_field_list(table_name, db_path):
-    """ Get a list of fields present in the table.
-
-        :param str table_name: name of the table
-        :param str db_path: path to the database
-        :returns: list containing the fields of the table
-
-        :raises IOError: cannot open file
-        :raises KeyError: invalid key
-        :raises Exception: table does not exist
-    """
-    try:
-        if not exists_table(table_name, db_path):
-            raise Exception('Table %s does not exist' % table_name)
-
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
-        return db_data[codecs.decode(table_name, 'utf-8')]['fields']
-
     except IOError as e:
         raise e
     except KeyError as e:

@@ -39,7 +39,7 @@ class TestTable(unittest.TestCase):
 
     def test_get_field_list(self):
         result = breezedb.get_field_list('table_1', db)
-        self.assertEqual([u'id', u'name', u'name2'], result)
+        self.assertEqual([{u'id': u'int'}, {u'name': u'str'}, {u'name2': u'str'}], result)
 
     def test_get_field_list_inexistent(self):
         try:

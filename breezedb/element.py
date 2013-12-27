@@ -29,6 +29,7 @@
 
 import codecs, json, os
 from table import exists_table
+from field import DTYPES, get_field_type
 
 def create_row(element_list, table_name, db_path):
     """ Creates a row of elements in the given table.
@@ -47,6 +48,7 @@ def create_row(element_list, table_name, db_path):
         :raises IOError: cannot open file
         :raises KeyError: invalid key
         :raises OSError: error writing to database
+        :raises TypeError: data type error
         :raises Exception: table does not exist
     """
     try:
@@ -57,14 +59,21 @@ def create_row(element_list, table_name, db_path):
         db_data = json.load(db_file)
         db_file.close()
 
-        new_row = {}
-        for index, field in enumerate(
+        if len(element_list) != len(
                 db_data[codecs.decode(table_name, 'utf-8')]['fields']):
-            # It is not possible to decode a number
-            if isinstance(element_list[index], (str, unicode)):
-                new_row[field] = codecs.decode(element_list[index], 'utf-8')
-            else:
-                new_row[field] = element_list[index]
+            raise Exception('Number of elements is not equal to the number of available fields')
+        new_row = {}
+        for index, f in enumerate(
+                db_data[codecs.decode(table_name, 'utf-8')]['fields']):
+            if element_list[index] == "":
+                new_row[f.keys()[0]] = ""
+            elif f.values()[0] == 'str':
+                new_row[f.keys()[0]] = codecs.decode(element_list[index], 'utf-8')
+            elif f.values()[0] == 'int' or f.values()[0] == 'bool':
+                # Boolean values a represented with 0 or 1
+                new_row[f.keys()[0]] = int(element_list[index])
+            elif f.values()[0] == 'float':
+                new_row[f.keys()[0]] = float(element_list[index])
 
         db_data[codecs.decode(table_name, 'utf-8')]['rows'].append(new_row)
 
@@ -80,6 +89,10 @@ def create_row(element_list, table_name, db_path):
     except KeyError as e:
         raise e
     except OSError as e:
+        raise e
+    except TypeError as e:
+        raise e
+    except ValueError as e:
         raise e
 
 def empty_element(index, field_name, table_name, db_path):
@@ -223,14 +236,22 @@ def modify_element(index, field_name, table_name, db_path, new_content):
         db_data = json.load(db_file)
         db_file.close()
 
-        # It is not possible to decode a number
-        if isinstance(new_content, (str, unicode)):
+        f_type = get_field_type(field_name, table_name, db_path)
+
+        if new_content == "":
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] = ""
+        elif f_type == 'str':
             db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
                     [codecs.decode(field_name, 'utf-8')] =\
                     codecs.decode(new_content, 'utf-8')
-        else:
+        elif f_type == 'int' or f_type == 'bool':
+            # Boolean values a represented with 0 or 1
             db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
-                    [codecs.decode(field_name, 'utf-8')] = new_content
+                    [codecs.decode(field_name, 'utf-8')] = int(new_content)
+        elif f_type == 'float':
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] = float(new_content)
 
         db_file = codecs.open(db_path, 'w', 'utf-8')
         db_file.write(json.dumps(db_data, ensure_ascii=False,

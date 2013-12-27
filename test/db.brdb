@@ -1,9 +1,9 @@
 {
     "table_1": {
         "fields": [
-            "id", 
-            "name", 
-            "name2"
+            {"id": "int"}, 
+            {"name": "str"}, 
+            {"name2": "str"}
         ], 
         "rows": [
             {
@@ -20,9 +20,9 @@
     }, 
     "table_2": {
         "fields": [
-            "id1", 
-            "name1", 
-            "name21"
+            {"id1": "int"}, 
+            {"name1": "str"}, 
+            {"name21": "str"}
         ], 
         "rows": [
             {
@@ -39,9 +39,9 @@
     },
     "table_3": {
         "fields": [
-            "id2", 
-            "name2", 
-            "name22"
+            {"id2": "int"}, 
+            {"name2": "str"}, 
+            {"name22": "str"}
         ], 
         "rows": [
             {

@@ -10,11 +10,11 @@ table = 'table_1'
 class TestField(unittest.TestCase):
 
     def test_create_field(self):
-        breezedb.create_field('new_field', table, db)
+        breezedb.create_field('new_field', 'str', table, db)
 
     def test_create_field_existing(self):
         try:
-            breezedb.create_field('new_field', table, db)
+            breezedb.create_field('new_field', 'str', table, db)
             self.assertEquals(False, True)
         except:
             self.assertTrue(True, True)
@@ -57,6 +57,10 @@ class TestField(unittest.TestCase):
             self.assertEquals(False, True)
         except:
             self.assertTrue(True, True)
+
+    def test_get_field_type(self):
+        result = breezedb.get_field_type('name2', table, db)
+        self.assertEquals(u'str', result)
 
     def test_rename_field(self):
         breezedb.rename_field('name2', table, db, 'name3')
