@@ -133,7 +133,7 @@ class Parser():
         re_empty_field_row = re.compile("EMPTY FIELD (.*) OF %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
         re_empty_element = re.compile("EMPTY ELEMENT (.*) FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
 
-        if re_empty_fields.match(self.query):
+        if re_empty_field.match(self.query):
             # EMPTY FIELD %field1%; %field2%; ... IN %table%; AT %db%; 
             field_args = re_empty_field.match(self.query).group(1)
             table_name = re_empty_field.match(self.query).group(2)
@@ -143,7 +143,7 @@ class Parser():
             for f in field_list:
                 empty_field_table(f, table_name, db_path)
 
-        elif re_empty_field.match(self.query):
+        elif re_empty_field_row.match(self.query):
             # EMPTY FIELD %field1%; %field2%; ... OF %index%; IN %table%; AT %db%; 
             field_args = re_empty_field_row.match(self.query).group(1)
             index = int(re_empty_field_row.match(self.query).group(1))

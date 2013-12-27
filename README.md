@@ -9,13 +9,16 @@ A simple file-based database engine.
 
 This code is written for **Python 2.7**
 
+Licensed under [GPLv2](http://www.gnu.org/licenses/gpl-2.0.html)
+
 ## Main features
 
 - breezedb aims to be a simple way of storing data in files, avoiding the need for a database server to be installed and running in the machine.
+- Stores data in a *single file*
 - It is meant to store small amounts of data.
 - All operations are done on the local file system.
 - There is no need to redistribute a database with your application, as it can be created on the go.
-- *XML* structure for organizing the data.
+- *JSON* structure for organizing the data.
 
 ## Installation
 
