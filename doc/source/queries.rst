@@ -219,7 +219,7 @@ The syntax for this operation is as follows::
 
     GET ROWS IN %table%; AT %dbpath%;
 
-This will return a list of dictionaries that represent each row contained in the *table*. Note that the data in these dictionaries is not ordered by priority but alphabetically.
+This will return a list of dictionaries that represent each row contained in the *table*. Note that the data in these dictionaries may not be ordered by priority.
 
 Obtain the content of an element
 ################################

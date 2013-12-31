@@ -20,15 +20,15 @@ class TestTable(unittest.TestCase):
 
     def test_exists_table_true(self):
         result = breezedb.exists_table('table_1', db)
-        self.assertEqual(True, result)
+        self.assertEquals(True, result)
 
     def test_exists_table_false(self):
         result = breezedb.exists_table('test', db)
-        self.assertEqual(False, result)
+        self.assertEquals(False, result)
 
     def test_get_row(self):
         result = breezedb.get_row(0, 'table_1', db)
-        self.assertEqual([0, u'Name1', u'Name2'], result)
+        self.assertEquals([0, u'Name1', u'Name2'], result)
 
     def test_get_row_inexistent(self):
         try:
@@ -37,9 +37,21 @@ class TestTable(unittest.TestCase):
         except:
             self.assertTrue(True, True)
 
+    def test_get_row_list(self):
+        result = breezedb.get_row_list('table_1', db)
+        expected = [{u'name2': u'Name2', u'id': 0, u'name': u'Name1'}, {u'name2': u'Name21', u'id': 23, u'name': u'Name12'}]
+        self.assertEquals(result, expected)
+
+    def test_get_row_list_inexistent(self):
+        try: 
+            result = breezedb.get_row_list('table_12345', db)
+            self.assertEqual(True, False)
+        except:
+            self.assertTrue(True, True)
+
     def test_get_field_list(self):
         result = breezedb.get_field_list('table_1', db)
-        self.assertEqual([{u'id': u'int'}, {u'name': u'str'}, {u'name2': u'str'}], result)
+        self.assertEquals([{u'id': u'int'}, {u'name': u'str'}, {u'name2': u'str'}], result)
 
     def test_get_field_list_inexistent(self):
         try:

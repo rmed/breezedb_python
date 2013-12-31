@@ -21,7 +21,7 @@ class TestDBOperations(unittest.TestCase):
     def test_get_table_list(self):
         path = os.path.join(test_root, 'tempdb.brdb')
         result = breezedb.get_table_list(path)
-        self.assertEqual([u'table_1', u'table_2', u'table_3']
+        self.assertEquals([u'table_1', u'table_2', u'table_3']
 , result)
 
     def test_get_table_list_inexistent(self):
@@ -35,12 +35,12 @@ class TestDBOperations(unittest.TestCase):
     def test_is_brdb(self):
         path = os.path.join(test_root, 'testdb.brdb')
         result = breezedb.is_brdb(path)
-        self.assertEqual(True, result)
+        self.assertEquals(True, result)
 
     def test_is_not_brdb(self):
         path = os.path.join(test_root, 'testdb1234.brdb')
         result = breezedb.is_brdb(path)
-        self.assertEqual(False, result)
+        self.assertEquals(False, result)
 
     def test_remove_db(self):
         path = os.path.join(test_root, 'testdb.brdb')
