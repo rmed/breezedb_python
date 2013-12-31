@@ -212,6 +212,15 @@ The syntax for this operation is as follows::
 
 This will return the data row of the *table* in the position specified by *index*. The data presented is ordered by priority of the fields.
 
+Obtain a complete list of rows
+##############################
+
+The syntax for this operation is as follows::
+
+    GET ROWS IN %table%; AT %dbpath%;
+
+This will return a list of dictionaries that represent each row contained in the *table*. Note that the data in these dictionaries is not ordered by priority but alphabetically.
+
 Obtain the content of an element
 ################################
 

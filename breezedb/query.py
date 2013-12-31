@@ -219,6 +219,7 @@ class Parser():
         re_get_type = re.compile("GET TYPE OF %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
         re_get_elements = re.compile("GET ELEMENTS FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
         re_get_row = re.compile("GET ROW %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
+        re_get_rows = re.compile("GET ROWS IN %(.+?)%; AT %(.+?)%;")
         re_get_element = re.compile("GET ELEMENT %(.+?)%; FROM %(.+?)%; IN %(.+?)%; AT %(.+?)%;")
 
         if re_get_tables.match(self.query):
@@ -257,6 +258,13 @@ class Parser():
             db_path = re_get_row.match(self.query).group(3)
 
             return get_row(index, table_name, db_path)
+
+        elif re_get_rows.match(self.query):
+            # GET ROWS IN %table%; AT %db%;
+            table_name = re_get_rows.match(self.query).group(1)
+            db_path = re_get_rows.match(self.query).group(2)
+
+            return get_row_list(table_name, db_path)
 
         elif re_get_element.match(self.query):
             # GET ELEMENT %index%; FROM %field%; IN %table%; AT %db%; 

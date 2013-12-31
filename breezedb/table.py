@@ -146,6 +146,37 @@ def get_row(index, table_name, db_path):
     except KeyError as e:
         raise e
 
+def get_row_list(table_name, db_path):
+    """ Get a list of all the rows in the table
+
+        :param str table_name: name of the table
+        :param str db_path: path to the database
+        :returns: list of data rows in dictionary format
+
+        :raises IOError: cannot open file
+        :raises KeyError: invalid field key
+        :raises Exception: table does not exist
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        elementlist = []
+        table = codecs.decode(table_name, 'utf-8')
+        for row in db_data[table]['rows']:
+            elementlist.append(row)
+
+        return elementlist
+
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+
 def rename_table(table_name, db_path, new_name):
     """ Rename a table from the database.
 
