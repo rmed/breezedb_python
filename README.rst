@@ -2,6 +2,7 @@ breezedb
 ========
 
 Source code is available in https://github.com/RMed/breezedb_python
+
 License: **GPLv2**
 
 Changelog
@@ -31,7 +32,9 @@ Overview
 Installation
 ------------
 
-- Linux/Unix (run with *superuser* permissions)::
+- Linux/Unix (run with *superuser* permissions):
+
+::
 
     # python setup.py install
 
@@ -39,11 +42,15 @@ or using pip::
 
     # pip install breezedb
 
-- Windows (run as *administrator*)::
+- Windows (run as *administrator*):
+
+::
 
     python.exe setup.py install
 
-or using pip::
+or using pip:
+
+::
 
     python.exe pip install breezedb
 
