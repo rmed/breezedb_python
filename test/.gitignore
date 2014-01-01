@@ -1,2 +1,3 @@
 # Ignore temp database
-/db_temp
+/dbtemp.brdb
+/dbtest.brdb

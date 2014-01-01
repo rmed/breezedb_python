@@ -1,0 +1,59 @@
+{
+    "table_1": {
+        "fields": [
+            {"id": "int"}, 
+            {"name": "str"}, 
+            {"name2": "str"}
+        ], 
+        "rows": [
+            {
+                "id": 0, 
+                "name": "Name1", 
+                "name2": "Name2"
+            }, 
+            {
+                "id": 23, 
+                "name": "Name12", 
+                "name2": "Name21"
+            }
+        ]
+    }, 
+    "table_2": {
+        "fields": [
+            {"id1": "int"}, 
+            {"name1": "str"}, 
+            {"name21": "str"}
+        ], 
+        "rows": [
+            {
+                "id1": 0, 
+                "name1": "Name1", 
+                "name21": "Name2"
+            }, 
+            {
+                "id1": 23, 
+                "name1": "Name12", 
+                "name21": "Name21"
+            }
+        ]
+    },
+    "table_3": {
+        "fields": [
+            {"id2": "int"}, 
+            {"name2": "str"}, 
+            {"name22": "str"}
+        ], 
+        "rows": [
+            {
+                "id2": 0, 
+                "name2": "Name1", 
+                "name22": "Name2"
+            }, 
+            {
+                "id2": 23, 
+                "name2": "Name12", 
+                "name22": "Name21"
+            }
+        ]
+    }
+}

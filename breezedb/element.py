@@ -4,18 +4,20 @@
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# or see <http://www.gnu.org/licenses/>.
 
 """
 .. module:: element
@@ -25,38 +27,11 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import xml.etree.ElementTree as XML
-import os, string
-import breezedb.field as field
-import breezedb.table as table
-from breezedb.breeze_exceptions import BreezeException
+import codecs, json, os
+from table import exists_table
+from field import DTYPES, get_field_type
 
-def element_exists(element_index, field_name, table_name, database):
-    """ Check whether an element exist in the field.
-
-        :param int element_index: index of the element to check
-        :param str field_name: name of the field that contains the element
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-
-        :returns: True or false
-
-        :raises BreezeException: supplied index is not a positive integer
-    """
-    if element_index < 0:
-        raise BreezeException('element', 'index needs to be a positive integer')
-
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
-
-    last_index = int(field_root[-1].get('index'))
-    if element_index <= last_index:
-        return True
-    else:
-        return False
-
-def create_element_row(element_list, table_name, database):
+def create_row(element_list, table_name, db_path):
     """ Creates a row of elements in the given table.
 
         Loops through the list of fields in the table and adds the
@@ -67,204 +42,270 @@ def create_element_row(element_list, table_name, database):
             there must be one element per field in the list, even if they are
             left blank
         :param str table_name: name of the table that will contain the row
-        :param str database: path to the database
+        :param str db_path: path to the database
 
-        :raises BreezeException: cannot write to database
-        :raises BreezeException: not enough elements
-        :raises BreezeException: too many elements
+        :rasies IndexError: invalid number of elements
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises OSError: error writing to database
+        :raises TypeError: data type error
+        :raises Exception: table does not exist
     """
-    can_write = os.access(database, os.W_OK)
-    if not can_write:
-        raise BreezeException('element', 'cannot write to database')
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist', table_name)
 
-    field_list = table.get_field_list(table_name, database)
-    if len(element_list) != len(field_list):
-        raise BreezeException('element', 'number of elements is not equal to the number of fields')
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-    field_tree = XML.parse(os.path.join(database, table_name, field_list[0]))
-    field_root = field_tree.getroot()
+        if len(element_list) != len(
+                db_data[codecs.decode(table_name, 'utf-8')]['fields']):
+            raise Exception('Number of elements is not equal to the number of available fields')
+        new_row = {}
+        for index, f in enumerate(
+                db_data[codecs.decode(table_name, 'utf-8')]['fields']):
+            if element_list[index] == "":
+                new_row[f.keys()[0]] = ""
+            elif f.values()[0] == 'str':
+                new_row[f.keys()[0]] = codecs.decode(element_list[index], 'utf-8')
+            elif f.values()[0] == 'int' or f.values()[0] == 'bool':
+                # Boolean values a represented with 0 or 1
+                new_row[f.keys()[0]] = int(element_list[index])
+            elif f.values()[0] == 'float':
+                new_row[f.keys()[0]] = float(element_list[index])
 
-    last_index = field_root[-1].get('index')
-    if last_index != None:
-        index = int(last_index) + 1
-    else:
-        index = 0
+        db_data[codecs.decode(table_name, 'utf-8')]['rows'].append(new_row)
 
-    for it, f in enumerate(field_list):
-        field_file = os.path.join(database, table_name, f)
-        field_tree = XML.parse(field_file)
-        field_root = field_tree.getroot()
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-        new_element = XML.Element('element')
-        new_element.set('index', str(index))
-        new_element.text = str(element_list[it])
-        field_root.append(new_element)
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+    except OSError as e:
+        raise e
+    except TypeError as e:
+        raise e
+    except ValueError as e:
+        raise e
 
-        field_tree.write(field_file)
-
-def parse_element_content(field_type, content):
-    """ Parse the content of the element depending on the type.
-
-        :param str field_type: type of the field that contains the element
-        :param str content: content to parse
-
-        :returns: parsed content according to the type (String, Int,
-            Boolean, etc)
-    """
-    if field_type == 'string':
-        return str(content)
-    elif field_type == 'int':
-        return int(content)
-    elif field_type == 'float' or field_type == 'double':
-        # Python's float type has double precision
-        return float(content)
-    elif field_type == 'boolean':
-        # boolean type is represented by a 0 (false) or a 1 (true)
-        if content == '0':
-            return False
-        else:
-            return True
-
-def get_element_content(element_index, field_name, table_name, database,
-    parse = True):
-    """ Get the data contained in an element.
-
-        :param int element_index: index of the element
-        :param str field_name: name of the field that contains the element
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-        :param Boolean parse: whether to parse the content according to
-            the type of the field or not
-
-        :returns str: content of the element
-    """
-    if not element_exists(element_index, field_name, table_name, database):
-        raise BreezeException('element', 'the element does not exist')
-
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
-
-    if parse:
-        field_type = field.get_field_type(field_name, table_name, database)
-        content = field_root.findall('element')[element_index].text
-        return parse_element_content(field_type, content)     
-
-    return field_root.findall('element')[element_index].text
-
-def find_element(to_find, field_name, table_name, database,
-        ignore_case = True):
-    """ Find elements in the field.
-
-        :param str to_find: data to find
-        :param str field_name: name of the field that contains the element
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-        :param Boolean ignore_case: whether or not to ignore the case
-            when searching
-
-        :returns: list of indexes that match the criteria
-    """
-    indexlist = []
-
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
-
-    for element in field_root.iter('element'):
-        if ignore_case:
-            if string.lower(str(to_find)) in string.lower(str(element.text)):
-                indexlist.append(element.get('index'))
-        else:
-            if str(to_find) in str(element.text):
-                indexlist.append(element.get('index'))
-
-    return indexlist
-
-def modify_element(element_index, field_name,
-                    table_name, database, new_content):
-    """ Modify the content of an element.
-
-        :param int element_index: index of the element to modify
-        :param str field_name: name of the field that contains the element
-        :param str table_name: name of the table that contains the field
-        :param str database: path to the database
-        :param str new_content: new content to store in the element
-
-        :raises BreezeException: element does not exist
-    """
-    if not element_exists(element_index, field_name, table_name, database):
-        raise BreezeException('element', 'the element does not exist')
-
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
-
-    field_root.findall('element')[element_index].text = str(new_content)
-
-    field_tree.write(field_file)
-
-def empty_element(element_index, field_name, table_name, database):
-    """ Empty the content of an element.
+def empty_element(index, field_name, table_name, db_path):
+    """ Empty the content of a specific element.
 
         The content is emptied instead of removing the whole element because
-        a single element cannot be removed, as the indexes of other fields
-        would not match.
+        a single element cannot be removed.
 
-        :param int element_index: index of the element to empty
+        :param int index: index of the element to empty
         :param str field_name: name of the field that contains the element
         :param str table_name: name of the table that contains the field
-        :param str database: path to the database
+        :param str db_path: path to the database
 
-        :raises BreezeException: element does not exist
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises OSError: error writing to database
+        :raises TypeError: invalid index type
+        :raises Exception: row does not exist
     """
-    if not element_exists(element_index, field_name, table_name, database):
-        raise BreezeException('element', 'the element does not exist')
+    try:
+        if not exists_row(index, table_name, db_path):
+            raise Exception('Row %i does not exist' % index)
 
-    field_file = os.path.join(database, table_name, field_name)
-    field_tree = XML.parse(field_file)
-    field_root = field_tree.getroot()
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-    field_root.findall('element')[element_index].text = ""
+        db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                [codecs.decode(field_name, 'utf-8')] = ""
 
-    field_tree.write(field_file)
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-def remove_element_row(element_index, table_name, database):
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+    except OSError as e:
+        raise e
+    except TypeError as e:
+        raise e
+
+def exists_row(index, table_name, db_path):
+    """ Check if a row with the given index exists in the table.
+
+        :param int index: index of check
+        :param str table_name: name of the table
+        :param str db_path: path to the database
+        :returns: True or false
+
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises TypeError: invalid index type
+        :raises Exception: table does not exist
+    """
+    try:
+        if not exists_table(table_name, db_path):
+            raise Exception('Table %s does not exist' % table_name)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        if index >= 0 and index < len(
+                db_data[codecs.decode(table_name, 'utf-8')]['rows']):
+            return True
+        else:
+            return False
+
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+    except TypeError as e:
+        raise e
+
+def get_element_data(index, field_name, table_name, db_path):
+    """ Get the data contained in a specific element.
+
+        :param int element_index: index of the row
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
+        :returns: content of the element
+
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises TypeError: invalid index type
+        :raises Exception: row does not exist
+    """
+    try:
+        if not exists_row(index, table_name, db_path):
+            raise Exception('Row %i does not exist' % index)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        return db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                [codecs.decode(field_name, 'utf-8')]
+
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+    except TypeError as e:
+        raise e
+
+def modify_element(index, field_name, table_name, db_path, new_content):
+    """ Modify the content of an element.
+
+        :param int index: index of the element to modify
+        :param str field_name: name of the field that contains the element
+        :param str table_name: name of the table that contains the field
+        :param str db_path: path to the database
+        :param str new_content: new content to store in the element
+
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises OSError: error writing to database
+        :raises TypeError: invalid index type
+        :raises Exception: row does not exist
+    """
+    try:
+        if not exists_row(index, table_name, db_path):
+            raise Exception('Row %i does not exist', index)
+
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
+
+        f_type = get_field_type(field_name, table_name, db_path)
+
+        if new_content == "":
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] = ""
+        elif f_type == 'str':
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] =\
+                    codecs.decode(new_content, 'utf-8')
+        elif f_type == 'int' or f_type == 'bool':
+            # Boolean values a represented with 0 or 1
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] = int(new_content)
+        elif f_type == 'float':
+            db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
+                    [codecs.decode(field_name, 'utf-8')] = float(new_content)
+
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
+
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+    except OSError as e:
+        raise e
+    except TypeError as e:
+        raise e
+
+def remove_row(index, table_name, db_path):
     """ Remove an element row from the specified table.
 
-        Removes all the elements that correspond to that index and then
-        updates the rest of the indexes of the files.
-
         :param int element_index: index of the element row to remove
-        :param str field_name: name of the field that contains the element
         :param str table_name: name of the table that contains the field
         :param str database: path to the database
 
-        :raises BreezeException: element does not exist,
-            element row cannot be removed
+        :raises IndexError: invalid index
+        :raises IOError: cannot open file
+        :raises KeyError: invalid key
+        :raises OSError: error writing to database
+        :raises TypeError: invalid index type
+        :raises Exception: row does not exist
     """
-    table_file = os.path.join(database, table_name, 'tableinfo.breeze')
-    table_tree = XML.parse(table_file)
-    table_root = table_tree.getroot()
+    try:
+        if not exists_row(index, table_name, db_path):
+            raise Exception('Row %i does not exist' % index)
 
-    for field in table_root:
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file)
+        db_file.close()
 
-        if not element_exists(element_index, field.text, table_name, database):
-            raise BreezeException('element', 'the element does not exist')
+        del db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]
 
-        try:
-            field_file = os.path.join(database, table_name, field.text)
-            field_tree = XML.parse(field_file)
-            field_root = field_tree.getroot()        
+        db_file = codecs.open(db_path, 'w', 'utf-8')
+        db_file.write(json.dumps(db_data, ensure_ascii=False,
+                sort_keys=True, indent=4))
+        db_file.close()
 
-            field_root.remove(field_root.findall('element')[element_index])
-
-            for element in field_root.iter('element'):
-                if int(element.get('index')) > element_index:
-                    element.set('index', str(int(element.get('index')) - 1))
-
-            field_tree.write(field_file)
-
-        except OSError:
-            raise BreezeException('element', 'could not remove element')
+    except IndexError as e:
+        raise e
+    except IOError as e:
+        raise e
+    except KeyError as e:
+        raise e
+    except OSError as e:
+        raise e
+    except TypeError as e:
+        raise e
 

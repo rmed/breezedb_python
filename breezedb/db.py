@@ -4,18 +4,20 @@
 #
 # Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+# or see <http://www.gnu.org/licenses/>.
 
 """
 .. module:: db
@@ -25,82 +27,85 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import xml.etree.ElementTree as XML
-import os, shutil
-from breezedb.breeze_exceptions import BreezeException
+import codecs, json, os
 
-def get_table_list(database):
-    """ Get a list of tables present in the database's root.breeze file.
-
-        :param str database: path to the database
-
-        :returns: list of all the tables
-
-        :raises BreezeException: directory is not a database
-    """
-    breeze_file = os.path.join(database, 'root.breeze')
-    is_breezedb = os.path.isfile(breeze_file)
-
-    if not is_breezedb:
-        raise BreezeException('db', 'not a database')
-
-    tablelist = []
-
-    breeze_file = os.path.join(database, 'root.breeze')
-    breeze_tree = XML.parse(breeze_file)
-    breeze_root = breeze_tree.getroot()
-
-    for table in breeze_root:
-        tablelist.append(table.text)
-
-    return tablelist
-        
 def create_db(path, name):
-    """ Create a database structure in the specified path.
+    """ Create a database file in the specified path.
 
         :param str path: path where the database should be created
         :param str name: name for the database
 
-        :raises BreezeException: cannot write to path,
-            cannot create directory, cannot create root.breeze file
+        :raises IOError: cannot write to path
+        :raises OSError: error writing to database
+        :raises Exception: database already exists
     """
-    can_write = os.access(path, os.W_OK)
-    if not can_write:
-        raise BreezeException('db', 'cannot write to path')
-
     try:
-        newdir = os.path.join(path, name)
-        os.makedirs(newdir)
+        db_path = os.path.join(path, name + '.brdb')
+        if is_brdb(db_path):
+            raise Exception('Database %s already exists' % db_path)
 
-        breeze_file = os.path.join(path, name, 'root.breeze')
-        breeze_tag = XML.Element('breeze')
-        breeze_tree = XML.ElementTree(breeze_tag)
-        breeze_tree.write(breeze_file)
+        db_file = open(db_path, 'w')
+        db_file.write('{}')
+        db_file.close()
 
-    except OSError:
-        raise BreezeException('db', 'could not create base directory')
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
 
-    except IOError:
-        raise BreezeException('db', 'error creating the root.breeze file')
+def get_table_list(db_path):
+    """ Get a list of tables present in the database.
 
-def remove_db(path):
-    """ Remove the breeze directory structure of the specified path.
+        :param str db_path: path to the database
+        :returns: list of all the tables ordered by key
 
-        :param str path: Path to the database
-
-        :raises BreezeException: cannot write to path,
-            cannot remove the directory
+        :raises IOError: cannot open file
+        :raises OSError: error writing to database
+        :raises Exception: not a breezedb database
     """
-    can_write = os.access(path, os.W_OK)
-    breeze_file = os.path.join(path, 'root.breeze')
-    is_breezedb = os.path.isfile(breeze_file)
-
-    if not can_write or not is_breezedb:
-        raise BreezeException('db', 'cannot remove')
-
     try:
-        shutil.rmtree(path)
+        if not is_brdb(db_path):
+            raise Exception('Not a breezedb database: %s' % db_path)
 
-    except:
-        raise BreezeException('db', 'could not remove the database')
+        db_file = codecs.open(db_path, 'r', 'utf-8')
+        db_data = json.load(db_file, encoding='utf-8')
+        db_file.close()
+
+        return sorted(db_data.iterkeys())
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
+
+def is_brdb(db_path):
+    """ Determine whether the specified file is a breezedb database or not.
+
+        :param str db_path: path to the database
+        :returns: True or False
+    """
+    if os.path.isfile(db_path) and db_path.endswith('.brdb'):
+        return True
+    else:
+        return False
+
+def remove_db(db_path):
+    """ Remove the breezedb database in the specified path.
+
+        :param str db_path: path to the database
+
+        :raises IOError: cannot open file
+        :raises OSError: cannot delete file
+        :raises Exception: not a breezedb database
+    """
+    try:
+        if not is_brdb(db_path):
+            raise Exception('Not a breezedb database: %s' % db_path)
+
+        os.remove(db_path)
+
+    except IOError as e:
+        raise e
+    except OSError as e:
+        raise e
 
