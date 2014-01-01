@@ -19,4 +19,4 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 # or see <http://www.gnu.org/licenses/>.
 
-__version__ = "dev"
+__version__ = "1.2.0"

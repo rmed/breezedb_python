@@ -23,7 +23,7 @@ from distutils.core import setup
 
 setup(
     name = 'breezedb',
-    version = 'dev',
+    version = '1.2.0',
     description = 'A simple file-based database engine',
     author = 'Rafael Medina García',
     author_email = 'rafamedgar@gmail.com',
