@@ -2,7 +2,7 @@
 #
 # This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
-# Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
+# Copyright (C) 2013-2014  Rafael Medina García <rafamedgar@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

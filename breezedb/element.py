@@ -2,7 +2,7 @@
 #
 # This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
-# Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
+# Copyright (C) 2013-2014  Rafael Medina García <rafamedgar@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,9 +27,10 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import codecs, json, os
+import codecs
 from table import exists_table
 from field import DTYPES, get_field_type
+import parser
 
 def create_row(element_list, table_name, db_path):
     """ Creates a row of elements in the given table.
@@ -55,9 +56,7 @@ def create_row(element_list, table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist', table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         if len(element_list) != len(
                 db_data[codecs.decode(table_name, 'utf-8')]['fields']):
@@ -77,10 +76,7 @@ def create_row(element_list, table_name, db_path):
 
         db_data[codecs.decode(table_name, 'utf-8')]['rows'].append(new_row)
 
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IndexError as e:
         raise e
@@ -117,17 +113,10 @@ def empty_element(index, field_name, table_name, db_path):
         if not exists_row(index, table_name, db_path):
             raise Exception('Row %i does not exist' % index)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
                 [codecs.decode(field_name, 'utf-8')] = ""
-
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IndexError as e:
         raise e
@@ -158,9 +147,7 @@ def exists_row(index, table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         if index >= 0 and index < len(
                 db_data[codecs.decode(table_name, 'utf-8')]['rows']):
@@ -196,10 +183,7 @@ def get_element_data(index, field_name, table_name, db_path):
         if not exists_row(index, table_name, db_path):
             raise Exception('Row %i does not exist' % index)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         return db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
                 [codecs.decode(field_name, 'utf-8')]
 
@@ -232,10 +216,7 @@ def modify_element(index, field_name, table_name, db_path, new_content):
         if not exists_row(index, table_name, db_path):
             raise Exception('Row %i does not exist', index)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         f_type = get_field_type(field_name, table_name, db_path)
 
         if new_content == "":
@@ -253,10 +234,7 @@ def modify_element(index, field_name, table_name, db_path, new_content):
             db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]\
                     [codecs.decode(field_name, 'utf-8')] = float(new_content)
 
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IndexError as e:
         raise e
@@ -287,16 +265,9 @@ def remove_row(index, table_name, db_path):
         if not exists_row(index, table_name, db_path):
             raise Exception('Row %i does not exist' % index)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         del db_data[codecs.decode(table_name, 'utf-8')]['rows'][index]
-
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IndexError as e:
         raise e

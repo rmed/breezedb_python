@@ -19,4 +19,36 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 # or see <http://www.gnu.org/licenses/>.
 
-__version__ = "dev"
+"""
+.. module:: parser
+    :platform: UNIX, Windows
+    :synopsis: DB parsing.
+
+.. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
+"""
+
+import codecs, json, os
+
+def read(db_path):
+    """ Read a database file in the specified path.
+
+        :param str db_path: complete path to the database file
+        :returns: data contained in the file
+    """
+    db_file = codecs.open(db_path, 'r', 'utf-8')
+    db_data = json.load(db_file, encoding='utf-8')
+    db_file.close()
+
+    return db_data
+
+def write(db_path, db_data):
+    """ Write data to a database.
+
+        :param str db_path: complete path to the database file
+        :param data: new data to store in the database
+    """
+    db_file = codecs.open(db_path, 'w', 'utf-8')
+    db_file.write(json.dumps(db_data, ensure_ascii=False,
+            sort_keys=True, indent=4))
+    db_file.close()
+

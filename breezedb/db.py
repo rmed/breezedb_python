@@ -2,7 +2,7 @@
 #
 # This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
-# Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
+# Copyright (C) 2013-2014  Rafael Medina García <rafamedgar@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,7 +27,8 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import codecs, json, os
+import os
+import parser
 
 def create_db(path, name):
     """ Create a database file in the specified path.
@@ -67,9 +68,7 @@ def get_table_list(db_path):
         if not is_brdb(db_path):
             raise Exception('Not a breezedb database: %s' % db_path)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file, encoding='utf-8')
-        db_file.close()
+        db_data = parser.read(db_path)
 
         return sorted(db_data.iterkeys())
 

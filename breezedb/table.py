@@ -2,7 +2,7 @@
 #
 # This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
-# Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
+# Copyright (C) 2013-2014  Rafael Medina García <rafamedgar@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,8 +27,8 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import codecs, json, os
-import db
+import codecs
+import db, parser
 
 def create_table(table_name, db_path):
     """ Create a new table in the database.
@@ -44,15 +44,9 @@ def create_table(table_name, db_path):
         if exists_table(table_name, db_path):
             raise Exception('Table %s already exists' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         db_data[codecs.decode(table_name, 'utf-8')] = {"fields":[],"rows":[]}
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -73,10 +67,7 @@ def exists_table(table_name, db_path):
         if not db.is_brdb(db_path):
             raise Exception('Not a breezedb database: %s' % db_path)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         if table_name.decode('utf-8') in sorted(db_data.iterkeys()):
             return True
         else:
@@ -100,10 +91,7 @@ def get_field_list(table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         return db_data[codecs.decode(table_name, 'utf-8')]['fields']
 
     except IOError as e:
@@ -128,9 +116,7 @@ def get_row(index, table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         elementlist = []
         table = codecs.decode(table_name, 'utf-8')
@@ -161,9 +147,7 @@ def get_row_list(table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         elementlist = []
         table = codecs.decode(table_name, 'utf-8')
@@ -194,18 +178,11 @@ def rename_table(table_name, db_path, new_name):
         elif exists_table(new_name, db_path):
             raise Exception('Table %s already exists' % new_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         db_data[codecs.decode(new_name, 'utf-8')] =\
                 db_data[codecs.decode(table_name, 'utf-8')]
         del db_data[codecs.decode(table_name, 'utf-8')]
-
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -226,16 +203,9 @@ def remove_table(table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         del db_data[codecs.decode(table_name, 'utf-8')]
-
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()        
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -264,9 +234,7 @@ def search_data(data, table_name, db_path, field_name=None, ignore_case=True):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         index_list = []
         for index, row in enumerate(db_data[codecs.decode(

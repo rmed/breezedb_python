@@ -2,7 +2,7 @@
 #
 # This file is part of breezedb - https://github.com/RMed/breezedb_python
 #
-# Copyright (C) 2013  Rafael Medina García <rafamedgar@gmail.com>
+# Copyright (C) 2013-2014  Rafael Medina García <rafamedgar@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,8 +27,9 @@
 .. moduleauthor:: Rafael Medina García <rafamedgar@gmail.com>
 """
 
-import codecs, json, os
+import codecs
 from table import exists_table
+import parser
 
 DTYPES = ['str', 'int', 'float', 'bool']
 
@@ -53,20 +54,14 @@ def create_field(field_name, field_type, table_name, db_path):
         elif field_type not in DTYPES:
             raise Exception('Invalid data type %s' % field_type)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         db_data[codecs.decode(table_name, 'utf-8')]['fields'].append(
                 {codecs.decode(field_name, 'utf-8'):field_type})
 
         for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
             row[codecs.decode(field_name, 'utf-8')] = ""
 
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -92,17 +87,10 @@ def empty_field_row(index, field_name, table_name, db_path):
         if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist' % field_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         db_data[codecs.decode(table_name, 'utf-8')]['rows']\
                 [index][codecs.decode(field_name, 'utf-8')] = ""
-
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IndexError as e:
         raise e
@@ -126,17 +114,12 @@ def empty_field_table(field_name, table_name, db_path):
         if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist' % field_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
             row[codecs.decode(field_name, 'utf-8')] = ""
 
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -157,9 +140,7 @@ def exists_field(field_name, table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         for f in db_data[codecs.decode(table_name, 'utf-8')]['fields']:
             if field_name.decode('utf-8') in f:
@@ -187,9 +168,7 @@ def get_field_data(field_name, table_name, db_path):
         if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist' % field_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         datalist = []
         for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
@@ -219,9 +198,7 @@ def get_field_type(field_name, table_name, db_path):
         if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist' % field_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         for f in db_data[codecs.decode(table_name, 'utf-8')]['fields']:
             if field_name.decode('utf-8') in f:
@@ -253,9 +230,7 @@ def rename_field(field_name, table_name, db_path, new_name):
         elif exists_field(new_name, table_name, db_path):
             raise Exception('Field %s already exists' % new_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         for index, field in enumerate(
                 db_data[codecs.decode(table_name, 'utf-8')]['fields']):
@@ -269,10 +244,7 @@ def rename_field(field_name, table_name, db_path, new_name):
                     row[codecs.decode(field_name, 'utf-8')]
             del row[codecs.decode(field_name, 'utf-8')]
 
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -297,9 +269,7 @@ def remove_field(field_name, table_name, db_path):
         if not exists_field(field_name, table_name, db_path):
             raise Exception('Field %s does not exist' % field_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
+        db_data = parser.read(db_path)
 
         for index, f in enumerate(
                 db_data[codecs.decode(table_name, 'utf-8')]['fields']):
@@ -310,10 +280,7 @@ def remove_field(field_name, table_name, db_path):
         for row in db_data[codecs.decode(table_name, 'utf-8')]['rows']:
             del row[codecs.decode(field_name, 'utf-8')]
 
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IOError as e:
         raise e
@@ -339,19 +306,12 @@ def swap_fields(index1, index2, table_name, db_path):
         if not exists_table(table_name, db_path):
             raise Exception('Table %s does not exist' % table_name)
 
-        db_file = codecs.open(db_path, 'r', 'utf-8')
-        db_data = json.load(db_file)
-        db_file.close()
-
+        db_data = parser.read(db_path)
         temp = db_data[codecs.decode(table_name, 'utf-8')]['fields'][index1]
         db_data[codecs.decode(table_name, 'utf-8')]['fields'][index1] =\
                 db_data[codecs.decode(table_name, 'utf-8')]['fields'][index2]
         db_data[codecs.decode(table_name, 'utf-8')]['fields'][index2] = temp
-
-        db_file = codecs.open(db_path, 'w', 'utf-8')
-        db_file.write(json.dumps(db_data, ensure_ascii=False,
-                sort_keys=True, indent=4))
-        db_file.close()
+        parser.write(db_path, db_data)
 
     except IndexError as e:
         raise e
